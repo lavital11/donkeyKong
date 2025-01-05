@@ -1,0 +1,4 @@
+C:\Users\97254\source\repos\DonkeyTE\x64\Debug\DonkeyTE.exe
+C:\Users\97254\source\repos\DonkeyTE combine\x64\Debug\DonkeyTE.exe
+C:\Users\97254\source\repos\‏‏‏‏DonkeyTE combine full - עותק\x64\Debug\DonkeyTE.exe
+C:\Users\97254\source\repos\‏‏‏‏DonkeyTE combine full - ex2\x64\Debug\DonkeyTE.exe
