@@ -1,0 +1,12 @@
+﻿  Barrels.cpp
+  Board.cpp
+  Game.cpp
+C:\Users\97254\source\repos\‏‏‏‏DonkeyTE combine full - ex2\Game.cpp(441,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  Ghost.cpp
+  Hammer.cpp
+  main.cpp
+  mario.cpp
+  Point.cpp
+  utils.cpp
+  Generating Code...
+  DonkeyTE.vcxproj -> C:\Users\97254\source\repos\‏‏‏‏DonkeyTE combine full - ex2\x64\Debug\DonkeyTE.exe
