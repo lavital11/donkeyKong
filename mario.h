@@ -3,8 +3,8 @@
 #include "Board.h"
 
 // Constants
-#define START_X 76
-#define START_Y 23
+static constexpr int LIFE_X = 16; // Maximum width of the board
+static constexpr int LIFE_Y = 1; // Maximum height of the board
 
 class Game;
 class Barrels;
@@ -19,10 +19,13 @@ private:
 
 public:
     int life = 3; // Mario's starting lives
+    int score = 0;
+    bool hasHammer = false;
 
     // Constructor
-    Mario(Game* g1)
-        : Point(START_X, START_Y, '@', nullptr), g1(g1), life(3), isAlive(true) {
+    Mario(Game* g1, int startx, int starty, Board* board)
+        : Point(startx, starty, '@', board), g1(g1), life(3), isAlive(true) {
+        setSymbol('@');
     }
 
     // Game initialization
@@ -44,7 +47,9 @@ public:
     void move(bool noColors);
 
     // Display Mario's remaining life
-    void printLife() const;
+    void printLife(int x, int y) const;
+
+    void printScore(int x, int y) const;
 
     // Handle Mario's movement upward
     void caseUp(bool noColors);
@@ -55,12 +60,14 @@ public:
     // Lose a life
     void loseLife() {
         life -= 1;
-        printLife();
+        printLife(LIFE_X, LIFE_Y);
     }
 
     // Check collision with a barrel
     bool isCollidingBarrel(const Barrels& barrel) const;
 
     bool isCollidingGhost(const Ghost& ghost) const;
+
+    void erase(bool noColors);
 
 };

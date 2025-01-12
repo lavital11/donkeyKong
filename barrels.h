@@ -32,4 +32,6 @@ public:
 
     // Checks if the barrel will explode and kill Mario upon collision
     bool isExplodeAndKillMario() const { return explodeKillMario; }
+
+    void erase(bool noColors);
 };

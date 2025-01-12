@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include "utils.h"
 
 void gotoxy(int x, int y) {

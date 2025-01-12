@@ -1,4 +1,4 @@
-#include "Ghost.h"
+﻿#include "Ghost.h"
 
 void Ghost::move(bool noColors) {
     erase(noColors); // Erase the barrel from its current position with noColors support
@@ -27,12 +27,19 @@ void Ghost::move(bool noColors) {
     lastDir = dir; // Update the last movement direction   
 }
 
-
-
 void Ghost::setInitialDirection() {
     setDirection((rand() % 2 == 0) ? -1 : 1, 0);
 }
-
 void Ghost::changeDir() {
     dir.x = -dir.x;
+}
+
+void Ghost::erase(bool noColors) {
+    // בדוק אם יש פטיש מתחת לרוח
+    if (pBoard->getChar(x, y) == 'p') {
+        return; // אל תמחק את הפטיש
+    }
+
+    // קריאה ללוגיקה הבסיסית של Point למחיקת הרוח
+    Point::erase(noColors);
 }

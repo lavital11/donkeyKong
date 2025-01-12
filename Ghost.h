@@ -8,19 +8,13 @@ class Ghost : public Point
 	Game* g1;
 	bool toRemove = false;          // Flag indicating if the ghost should be removed
 
-
 public:
 	Ghost(Board* board, int startX, int startY, Game* game, char symbol = 'x')
 		: Point(startX, startY, symbol, board), g1(game) {}
-
 	void move(bool noColors);
-
 	void setInitialDirection();
-
 	bool shouldRemove() const { return toRemove; }
-
 	void changeDir();
-	
-
+	void erase(bool noColors);
 };
 

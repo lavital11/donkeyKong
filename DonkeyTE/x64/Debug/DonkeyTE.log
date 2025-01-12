@@ -1,11 +1,2 @@
 ﻿  Game.cpp
-C:\Users\eladnulman\Documents\elad nulman\studies\DonkeyTE with combine\Board.h(2,9): warning C4005: '_WIN32_WINNT': macro redefinition
-  (compiling source file 'Game.cpp')
-      C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\shared\sdkddkver.h(224,10):
-      see previous definition of '_WIN32_WINNT'
-  
-C:\Users\eladnulman\Documents\elad nulman\studies\DonkeyTE with combine\Game.cpp(296,61): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\eladnulman\Documents\elad nulman\studies\DonkeyTE with combine\Game.cpp(296,28): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
-C:\Users\eladnulman\Documents\elad nulman\studies\DonkeyTE with combine\Game.cpp(324,61): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\eladnulman\Documents\elad nulman\studies\DonkeyTE with combine\Game.cpp(324,28): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
-  DonkeyTE.vcxproj -> C:\Users\eladnulman\Documents\elad nulman\studies\DonkeyTE with combine\x64\Debug\DonkeyTE.exe
+  DonkeyTE.vcxproj -> C:\Users\eladnulman\source\repos\lavital11\donkeyKong\‏‏‏‏DonkeyTE combine full - ex2\x64\Debug\DonkeyTE.exe

@@ -1,11 +1,11 @@
 ﻿#pragma once
-#include "Board.h"
 #include "Mario.h"
 #include "Barrels.h"
 #include <vector>
 #include "Ghost.h"
 #include "Hammer.h"
 #include <string>
+#include "Board.h"
 
 // Class representing the game state and logic
 class Game {
@@ -18,9 +18,11 @@ private:
     Mario player;               // The main player (Mario)
     std::vector<Barrels> barrels; // List of barrels in the game
     std::vector<Ghost> ghosts; // List of ghosts in the game
-
     std::vector<std::string> boardFiles; // List of board file paths
     int currentBoardIndex;               // Index of the currently loaded board
+    Hammer hammer;
+    int hammerOriginalX;
+    int hammerOriginalY;
 
 public:
     // Constructor
@@ -37,11 +39,16 @@ public:
     void showInstructions();    // Displays game instructions
     void checkCollision();      // Checks if Mario collides with barrels
     void handleCollision();     // Handles collisions
-    void checkWin();            // Checks if Mario wins
+    void checkLevelPass();
+    void nextLevel();
     void winGame();             // Handles win logic
     void printWinMessage();     // Displays the win message
+    void printNextLevelMessage();
     void printLoseMessage();    // Displays the lose message
     void restartLevel();        // Restarts the level after loss
+    void createLegend();
+    void printLegend(int x, int y);
+    void ignoreOldGhost();
 
     // Barrel management functions
     void updateBarrels();       // Updates the state of the barrels in the game loop
@@ -56,6 +63,11 @@ public:
 
     void createGhost();
     void createHammer();
+    void collectHammer();
+    void resetHammer();
+    void useHammer();
+    void checkAndRemoveEntities(int checkX, int checkY, bool& success);
+    void createMario();
     // New function to load board files
     void loadBoardFiles(const std::string& directory);
 

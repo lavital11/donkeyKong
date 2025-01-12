@@ -5,7 +5,6 @@
 
 // Draw Mario at the starting position
 void Mario::drawStart(bool noColors) {
-    setPosition(START_X, START_Y);
     dir = { 0, 0 };
     lastDir = { 0, 0 };
     isAlive = true;
@@ -14,9 +13,10 @@ void Mario::drawStart(bool noColors) {
 
 // Handle key presses for movement
 void Mario::keyPressed(char key) {
+    char thisChar = pBoard->getChar(x,y);
     for (size_t i = 0; i < numKeys; i++) {
         if (std::tolower(key) == keys[i]) {
-            if (keys[i] == 'w' && !isOnGround()) // Check if Mario is already in the air
+            if (keys[i] == 'w' && (!isOnGround() && thisChar != 'H')) // Check if Mario is already in the air
                 return;
             dir = directions[i];
             return;
@@ -77,16 +77,18 @@ void Mario::move(bool noColors) {
     int newX = x + dir.x;
     int newY = y + dir.y;
     char nextChar = pBoard->getChar(newX, newY);
-
+    char underChar = pBoard->getChar(x, y+1);
     if (dir.y == -1) // press 'w'
         caseUp(noColors); // Supports noColors
+    else if (dir.y == -1 && (pBoard->getChar(x, y) == 'H')) // לעלות על הסולם
+        caseUp(noColors);
     else if (dir.y == 1) // press 'x'
         caseDown(noColors); // Supports noColors
-    else { // press 'a' or 'd'
+    else { // press 'a' or 'd' or 's'
         if (nextChar == 'Q') { // facing a wall
             dir = { 0, 0 }; // stop movement
         }
-        else if (!isOnGround()) { // falling between floors
+        else if (!isOnGround() && underChar!='H') { // falling between floors
             falling(noColors); // Supports noColors
         }
         else {
@@ -159,10 +161,16 @@ bool Mario::getIsAlive() {
 }
 
 // Display Mario's remaining lives
-void Mario::printLife() const {
+void Mario::printLife(int x, int y) const {
     char lifeChar = life + '0';
-    gotoxy(16, 1);
+    gotoxy(x,y);
     std::cout << lifeChar;
+}
+
+void Mario::printScore(int x, int y) const {
+    char scoreChar = score + '0';
+    gotoxy(x,y);
+    std::cout << scoreChar;
 }
 
 // Check if Mario is colliding with a given barrel
@@ -172,4 +180,13 @@ bool Mario::isCollidingBarrel(const Barrels& barrel) const {
 
 bool Mario::isCollidingGhost(const Ghost& ghost) const {
     return (getX() == ghost.getX() && getY() == ghost.getY());
+}
+
+void Mario::erase(bool noColors) {
+    int newX = x + dir.x;
+    int newY = y + dir.y;
+    char nextChar = pBoard->getChar(newX, newY);
+
+    // קריאה ללוגיקה הבסיסית של Point למחיקת הדמות
+    Point::erase(noColors);
 }

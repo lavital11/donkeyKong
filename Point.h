@@ -41,7 +41,7 @@ public:
     void draw(bool noColors) const;
 
     // Erases the point by drawing a space over it, with optional color handling
-    void erase(bool noColors);
+    virtual void erase(bool noColors);
 
     // Sets the board for this point
     void setBoard(Board& board);
@@ -54,6 +54,8 @@ public:
 
     // Sets the movement direction of the point
     void setDirection(int dx, int dy);
+
+    Direction getDirection() const;
 
     // Checks if the point is on the ground (i.e., below an obstacle)
     bool isOnGround();

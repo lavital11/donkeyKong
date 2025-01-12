@@ -87,3 +87,14 @@ void Barrels::move(bool noColors) {
 void Barrels::setInitialDirection() {
     setDirection((rand() % 2 == 0) ? -1 : 1, 0);
 }
+
+void Barrels::erase(bool noColors) {
+    // בדוק אם יש פטיש מתחת לחבית
+    if (pBoard->getChar(x, y) == 'p') {
+        draw('p', noColors); // השאר את הפטיש במקום
+        return;
+    }
+
+    // קריאה ללוגיקה הבסיסית של Point למחיקת החבית
+    Point::erase(noColors);
+}

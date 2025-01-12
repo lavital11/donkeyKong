@@ -3,20 +3,23 @@
 // Draws the character `c` at the current position, with optional color handling
 void Point::draw(char c, bool noColors) const {
     gotoxy(x, y);
-
     if (!noColors) {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-        // Change console color based on character `c`
-        switch (c) {
-        case '=': SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY); break; // Blue
-        case 'H': SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY); break; // Yellow
-        default: SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); break; // White
+        // Always keep Mario white if the character is '@'
+        if (c == '@') {
+            SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); // White
+        }
+        else {
+            // Change console color based on character `c`
+            switch (c) {
+            case '=': SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY); break; // Blue
+            case 'H': SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY); break; // Yellow
+            default: SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); break; // White
+            }
         }
     }
 
     std::cout << c;
-
     if (!noColors) {
         // Reset color to default
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -80,6 +83,10 @@ void Point::setSymbol(char symbol) {
 // Sets the movement direction of the point
 void Point::setDirection(int dx, int dy) {
     dir = { dx, dy };
+}
+
+Point::Direction Point::getDirection() const {
+    return dir;
 }
 
 // Checks if the point is on the ground (i.e., below an obstacle)

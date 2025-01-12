@@ -1,15 +1,12 @@
-﻿#include <windows.h>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <windows.h>
 #include <cstring>
 #include <iostream>
-#include "Board.h"
-
 #include "Board.h"
 #include <fstream>
 #include <stdexcept>
-#include <cstring>
 #include <filesystem>
 #include <algorithm>
-#include <iostream>
 
 // Constructor initializes the board by loading it from a file
 Board::Board(const std::string& filename) {
@@ -53,6 +50,10 @@ void Board::reset(const std::string& filename) {
 void Board::print(bool noColors) const {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
+    // Set cursor position to the top-left corner
+    COORD coord = { 0, 0 };
+    SetConsoleCursorPosition(hConsole, coord);
+
     for (int y = 0; y < MAX_Y; ++y) {
         for (int x = 0; x < MAX_X; ++x) {
             char currentChar = currentBoard[y][x];
@@ -95,56 +96,3 @@ void Board::print(bool noColors) const {
 char Board::getChar(int x, int y) const {
     return currentBoard[y][x];
 }
-
-
-/*
-
-// Resets the board to its original layout
-void Board::reset() {
-    for (int i = 0; i < MAX_Y; i++) {
-        memcpy(currentBoard[i], originalBoard[i], MAX_X + 1);
-    }
-}
-
-// Prints the current state of the board to the console
-void Board::print(bool noColors) const {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    for (int y = 0; y < MAX_Y; ++y) {
-        for (int x = 0; x < MAX_X; ++x) {
-            char currentChar = currentBoard[y][x];
-
-            // Change color based on the current character, only if noColors is false
-            if (!noColors) {
-                switch (currentChar) {
-                case '=':
-                    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY); // Blue
-                    break;
-                case 'H':
-                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Yellow
-                    break;
-                case '<':
-                case '>':
-                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); // White
-                    break;
-                default:
-                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); // Default (White)
-                    break;
-                }
-            }
-
-            std::cout << currentChar;
-        }
-
-        // Print new line only if it's not the last row
-        if (y < MAX_Y - 1) {
-            std::cout << '\n';
-        }
-    }
-
-    // Reset color, only if noColors is false
-    if (!noColors) {
-        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-    }
-}
-*/
