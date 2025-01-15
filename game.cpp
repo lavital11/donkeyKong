@@ -427,7 +427,7 @@ void Game::printWinMessage() const{
     std::string line5 = "*          EARNED 300 POINTS!           *"; // Main win message
     std::string line6 = "*               YOU WIN!                *"; // Main win message
     std::string line7 = "*            Game Completed!            *"; // Submessage indicating level completion
-    std::string line8 = "*              Total Score:"; // Submessage for total score
+    std::string line8 = "            Total Score:"; // Submessage for total score
 
     // Check if the player gets a bonus for finishing quickly
     if (gameTime < 60) {
@@ -455,7 +455,7 @@ void Game::printWinMessage() const{
     std::cout << std::string(centerColumn, ' ') << line7 << std::endl; // Submessage
     // Print the total score line with the player's score
     std::cout << std::string(centerColumn, ' ') << line8;
-    std::cout << " " << player.score << "         *" << std::endl; // Add the score next to "Total Score:"
+    std::cout << " " << player.score << std::endl; // Add the score next to "Total Score:"
     std::cout << std::string(centerColumn, ' ') << line2 << std::endl; // Padding
     std::cout << std::string(centerColumn, ' ') << line1 << std::endl; // Bottom border
 
