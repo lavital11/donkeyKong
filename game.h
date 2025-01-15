@@ -38,6 +38,8 @@ private:
     int countDonkey = 0;
     int DONK_X; // X position of Donkey
     int DONK_Y; // Y position of Donkey
+    int PAU_X; // X position of Donkey
+    int PAU_Y;
 
 public:
     // Constructor
@@ -63,6 +65,7 @@ public:
     void restartLevel();        // Restarts the level after loss
     void createLegend();
     void createDonkey();
+    void createPau();
     void printLegend(int x, int y);
     void ignoreOldGhost();
 

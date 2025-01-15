@@ -4,8 +4,6 @@
 #include <filesystem>
 #include "Game.h"
 
-constexpr int PAU_X = 38;
-constexpr int PAU_Y = 0;
 constexpr int ESC = 27; // ESC key code
 static constexpr int SCORE_X = 9; 
 static constexpr int SCORE_Y = 2; 
@@ -14,12 +12,17 @@ static constexpr int KILL_GHOST_SCORE = 30;
 static constexpr int LESS_THAN_A_MINUITE_SCORE = 100;
 static constexpr int FINISH_LEVEL = 300;
 static constexpr int DIE = -50;
+static constexpr int WITH_COLORS = 1;
+static constexpr int NO_COLORS = 2;
+static constexpr int SPEC_BOARD = 3;
+static constexpr int INSTRUCTIONS = 8;
+static constexpr int EXIT = 9;
 
 namespace fs = std::filesystem;
 using namespace std::chrono;
 
 // Constructor initializes the game state and player
-Game::Game() : isGameOver(false), isPaused(false), noColors(false), currentBoardIndex(0), hammer(nullptr, -1, -1, nullptr), player(this,-1,-1,nullptr), hammerOriginalX(0), hammerOriginalY(0), DONK_X(0), DONK_Y(0){}
+Game::Game() : isGameOver(false), isPaused(false), noColors(false), currentBoardIndex(0), hammer(nullptr, -1, -1, nullptr), player(this,-1,-1,nullptr), hammerOriginalX(0), hammerOriginalY(0), DONK_X(0), DONK_Y(0), PAU_X(0), PAU_Y(0) {}
 
 void Game::startGame() {
     loadBoardFiles("boards/"); // Load all board files from the "boards" directory
@@ -35,19 +38,19 @@ void Game::startGame() {
         std::cin >> choice;
 
         switch (choice) {
-        case 1: // Start game with colors
+        case WITH_COLORS: // Start game with colors
             noColors = false;
             system("cls");
             runGame();
             break;
 
-        case 2: // Start game without colors
+        case NO_COLORS: // Start game without colors
             noColors = true;
             system("cls");
             runGame();
             break;
 
-        case 3: { // Select a specific board
+        case SPEC_BOARD: { // Select a specific board
             system("cls");
             std::cout << "Available boards:\n";
             for (size_t i = 0; i < boardFiles.size(); ++i) {
@@ -67,12 +70,12 @@ void Game::startGame() {
             break;
         }
 
-        case 8: // Show instructions
+        case INSTRUCTIONS: // Show instructions
             system("cls");
             showInstructions();
             break;
 
-        case 9: // Exit game
+        case EXIT: // Exit game
             std::cout << "Exiting the game. Goodbye!" << std::endl;
             break;
 
@@ -83,7 +86,7 @@ void Game::startGame() {
             Sleep(1500); // Small delay for better user experience
             break;
         }
-    } while (choice != 9); // Exit loop when the user chooses to quit
+    } while (choice != EXIT); // Exit loop when the user chooses to quit
 }
 
 void Game::showInstructions() {
@@ -636,6 +639,19 @@ void Game::createDonkey() {
             if (board.getChar(x, y) == '&') {
                 DONK_X = x; // Set the X position of Donkey
                 DONK_Y = y; // Set the Y position of Donkey
+                return; // Exit inner loop when found
+            }
+        }
+    }
+}
+
+void Game::createPau() {
+    // Iterate through the board to find the '&' character
+    for (int y = 0; y < MAX_Y; y++) {
+        for (int x = 0; x < MAX_X; x++) {
+            if (board.getChar(x, y) == '$') {
+                PAU_X = x; // Set the X position of Donkey
+                PAU_Y = y; // Set the Y position of Donkey
                 return; // Exit inner loop when found
             }
         }
