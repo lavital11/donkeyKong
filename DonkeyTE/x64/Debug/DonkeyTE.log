@@ -1,6 +1,4 @@
-﻿  Barrels.cpp
-  Game.cpp
-  main.cpp
-  mario.cpp
-  Generating Code...
-LINK : fatal error LNK1168: cannot open C:\Users\eladnulman\source\repos\new\x64\Debug\DonkeyTE.exe for writing
+﻿  Game.cpp
+C:\Users\eladnulman\source\repos\JANUARY15-0400\Game.cpp(442,61): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\eladnulman\source\repos\JANUARY15-0400\Game.cpp(442,28): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
+  DonkeyTE.vcxproj -> C:\Users\eladnulman\source\repos\JANUARY15-0400\x64\Debug\DonkeyTE.exe

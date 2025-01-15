@@ -124,6 +124,7 @@ void Game::runGame() {
     createHammer();
     createGhost();
     createLegend();
+    createPau();
     startLevel();
 
     // Timers for game mechanics
@@ -415,17 +416,30 @@ void Game::winGame() {
     char key = _getch(); // Wait for any key to continue
 }
 
-void Game::printWinMessage() {
-    const int screenWidth = 80; // Total width of the console screen
-    const int screenHeight = 25; // Total height of the console screen
-    const std::string line1 = "*****************************************"; // Top and bottom border of the message box
-    const std::string line2 = "*                                       *"; // Empty line for padding within the box
-    const std::string line3 = "*               YOU WIN!                *"; // Main win message
-    const std::string line4 = "*            game Completed!            *"; // Submessage indicating level completion
+void Game::printWinMessage() const{
+     int screenWidth = 80; // Total width of the console screen
+     int screenHeight = 25; // Total height of the console screen
 
-    const int messageHeight = 6; // Total height of the message box
-    const size_t startRow = (screenHeight - messageHeight) / 2; // Vertical center of the screen
-    const size_t centerColumn = (screenWidth - line1.length()) / 2; // Horizontal center of the screen
+    std::string line1 = "*****************************************"; // Top and bottom border of the message box
+    std::string line2 = "*                                       *"; // Empty line for padding within the box
+    std::string line3;
+    std::string line4 = "*     YOU PASSED THE FINAL LEVEL!       *"; // Main win message
+    std::string line5 = "*          EARNED 300 POINTS!           *"; // Main win message
+    std::string line6 = "*               YOU WIN!                *"; // Main win message
+    std::string line7 = "*            Game Completed!            *"; // Submessage indicating level completion
+    std::string line8 = "*              Total Score:"; // Submessage for total score
+
+    // Check if the player gets a bonus for finishing quickly
+    if (gameTime < 60) {
+        line3 = "*   100 POINTS BONUS FOR BEING FAST!    *"; // Bonus message
+    }
+    else {
+        line3 = "*                                       *"; // Empty padding
+    }
+
+    const int messageHeight = 8; // Total height of the message box
+    const int startRow = (screenHeight - messageHeight) / 2; // Vertical center of the screen
+    const int centerColumn = (screenWidth - line1.length()) / 2; // Horizontal center of the screen
 
     for (int i = 0; i < startRow; ++i) {
         std::cout << std::endl; // Print empty lines to vertically center the message
@@ -436,6 +450,12 @@ void Game::printWinMessage() {
     std::cout << std::string(centerColumn, ' ') << line2 << std::endl; // Padding
     std::cout << std::string(centerColumn, ' ') << line3 << std::endl; // Main win message
     std::cout << std::string(centerColumn, ' ') << line4 << std::endl; // Submessage
+    std::cout << std::string(centerColumn, ' ') << line5 << std::endl; // Submessage
+    std::cout << std::string(centerColumn, ' ') << line6 << std::endl; // Submessage
+    std::cout << std::string(centerColumn, ' ') << line7 << std::endl; // Submessage
+    // Print the total score line with the player's score
+    std::cout << std::string(centerColumn, ' ') << line8;
+    std::cout << " " << player.score << "         *" << std::endl; // Add the score next to "Total Score:"
     std::cout << std::string(centerColumn, ' ') << line2 << std::endl; // Padding
     std::cout << std::string(centerColumn, ' ') << line1 << std::endl; // Bottom border
 
@@ -583,21 +603,18 @@ void Game::ignoreOldGhost() {
 }
 
 void Game::createHammer() {
-    if (hammer.getX() == -1 && hammer.getY() == -1) {
-        // פטיש כבר לא קיים, חפש מחדש את ה- p בלוח
-        for (int y = 0; y < MAX_Y; ++y) {
-            for (int x = 0; x < MAX_X; ++x) {
-                if (board.getChar(x, y) == 'p') { // אם מצאנו את ה-p בלוח
-                    hammer = Hammer(&board, x, y, this); // צור את הפטיש מחדש
-                    board.setChar(x, y, 'p'); // ודא שהפטיש מופיע בלוח
-                    return;
-                }
+    // אפס את הפטיש אם הוא לא קיים
+    hammer = Hammer(&board, -1, -1, this); // אפס את המיקום של הפטיש
+
+    // חפש מחדש את ה-p בלוח
+    for (int y = 0; y < MAX_Y; ++y) {
+        for (int x = 0; x < MAX_X; ++x) {
+            if (board.getChar(x, y) == 'p') { // אם מצאנו את ה-p בלוח
+                hammer = Hammer(&board, x, y, this); // צור את הפטיש מחדש במיקום החדש
+                board.setChar(x, y, 'p'); // ודא שהפטיש מופיע בלוח
+                return;
             }
         }
-    }
-    else {
-        // אם לפטיש יש מיקום תקין, ודא שהוא מודפס בלוח
-        board.setChar(hammer.getX(), hammer.getY(), 'p');
     }
 }
 

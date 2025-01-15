@@ -59,7 +59,7 @@ public:
     void checkLevelPass();
     void nextLevel();
     void winGame();             // Handles win logic
-    void printWinMessage();     // Displays the win message
+    void printWinMessage() const;     // Displays the win message
     void printNextLevelMessage() const;
     void printLoseMessage();    // Displays the lose message
     void restartLevel();        // Restarts the level after loss
