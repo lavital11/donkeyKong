@@ -44,7 +44,7 @@ void Mario::caseUp(bool noColors) {
     else {
         jump(noColors); // Supports noColors
         draw(noColors); // Supports noColors
-        Sleep(200);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         erase(noColors); // Supports noColors
         falling(noColors); // Supports noColors
     }
@@ -105,6 +105,12 @@ void Mario::jump(bool noColors) {
     int newX = x + lastDir.x;
     int newY = y + (2 * dir.y);
 
+    if (pBoard->getChar(newX, y) == 'Q') {
+        dir = { 0, 1 };         // עדכון כיוון לתנועה אנכית בלבד
+        falling(noColors);      // התחלת נפילה
+        return;
+    }
+
     if (pBoard->getChar(newX, newY) == 'H') {
         x = newX;
         y = newY;
@@ -129,14 +135,21 @@ void Mario::jump(bool noColors) {
 
 // Handle Mario's falling
 void Mario::falling(bool noColors) {
-    int newX = x + lastDir.x;
-    int newY = y + 1;
-    int underNewY = newY + 1;
+    int newX = x + lastDir.x;   // חישוב המיקום החדש בציר X
+    int newY = y + 1;           // חישוב המיקום החדש בציר Y
+    int underNewY = newY + 1;   // המיקום מתחת למיקום החדש בציר Y
+
+    // בדיקת גבולות
+    if (newX < 0 || newX >= MAX_X || newY < 0 || newY >= 24) { // שורה 24 היא רצפה
+        dir = { 0, 0 };         // עצירת התנועה
+        return;
+    }
+
     char underNextChar = pBoard->getChar(newX, underNewY);
     char nextChar = pBoard->getChar(newX, newY);
     y = newY;
     x = newX;
-
+    // טיפול במפגש עם הקרקע
     if (isOnGround()) {
         dir = lastDir; // Stop falling if obstacle below
         if (countFall >= 5) {
@@ -145,20 +158,21 @@ void Mario::falling(bool noColors) {
             return;
         }
         countFall = 0;
-        draw(noColors); // Supports noColors
-        erase(noColors); // Supports noColors
+        draw(noColors);         // צייר את מריו במיקום החדש
+        erase(noColors);        // מחק את המיקום הקודם
     }
+    // המשך נפילה אם אין קרקע מתחת
     else if ((nextChar == ' ') || (nextChar == 'H')) {
         countFall++;
-        y = newY; // Move down
-        x = newX;
-        draw(noColors); // Supports noColors
-        erase(noColors); // Supports noColors
+        y = newY;               // עדכון מיקום בציר Y
+        x = newX;               // עדכון מיקום בציר X
+        draw(noColors);         // צייר את מריו במיקום החדש
+        erase(noColors);        // מחק את המיקום הקודם
     }
 }
 
 // Returns whether Mario is alive
-bool Mario::getIsAlive() {
+bool Mario::getIsAlive() const{
     return life > 0;
 }
 

@@ -7,6 +7,7 @@
 #include <string>
 #include "Board.h"
 #include <chrono>
+#include <thread>
 
 static constexpr int MAX_X = 80; // Maximum width of the board
 static constexpr int MAX_Y = 25; // Maximum height of the board
@@ -97,6 +98,7 @@ public:
     bool checkLegend();
     bool checkGhost();
     bool checkInvalidChar();
+    bool checkLadder();
 
     void startLevel();
     void endLevel();

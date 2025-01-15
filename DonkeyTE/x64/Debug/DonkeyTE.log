@@ -1,2 +1,6 @@
-﻿  Game.cpp
-LINK : fatal error LNK1168: cannot open C:\Users\eladnulman\source\repos\lavital11\donkeyKong\‏‏‏‏DonkeyTE combine full - ex2\x64\Debug\DonkeyTE.exe for writing
+﻿  Barrels.cpp
+  Game.cpp
+  main.cpp
+  mario.cpp
+  Generating Code...
+LINK : fatal error LNK1168: cannot open C:\Users\eladnulman\source\repos\new\x64\Debug\DonkeyTE.exe for writing

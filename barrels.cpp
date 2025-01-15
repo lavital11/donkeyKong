@@ -95,6 +95,12 @@ void Barrels::erase(bool noColors) {
         return;
     }
 
+
+    if (pBoard->getChar(x, y) == '&') {
+        draw('&', noColors); // Keep Donkey Kong in place
+        return;
+    }
+
     // קריאה ללוגיקה הבסיסית של Point למחיקת החבית
     Point::erase(noColors);
 }

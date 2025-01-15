@@ -822,12 +822,20 @@ void Game::drawBorders() {
                     board.setChar(i, j, 'Q');
                 }
             }
-            if (board.getChar(i,j) == '\0') {
-                board.setChar(i,j, ' ');
+            else if (board.getChar(i, j) == 'Q') {
+                // Replace any 'Q' not in the borders with a space
+                board.setChar(i, j, ' ');
             }
+
+            // Replace '\0' with space
+            if (board.getChar(i, j) == '\0') {
+                board.setChar(i, j, ' ');
+            }
+
             // Draw bottom row border
             if (j == 24) {
-                if (board.getChar(i, j) != '=' && board.getChar(i, j) != '>' && board.getChar(i, j) != '<') {
+                if ((i != 0 && i != 79) &&
+                    (board.getChar(i, j) != '=' && board.getChar(i, j) != '>' && board.getChar(i, j) != '<')) {
                     board.setChar(i, j, '=');
                 }
             }
@@ -935,6 +943,26 @@ bool Game::checkInvalidChar() {
             if (board.getChar(x, y) != '@' && board.getChar(x, y) != '&' && board.getChar(x, y) != '$' && board.getChar(x, y) != 'L' && board.getChar(x, y) != '=' && board.getChar(x, y) != '>' && board.getChar(x, y) != '<' && board.getChar(x, y) != 'Q' && board.getChar(x, y) != 'p' && board.getChar(x, y) != 'H' && board.getChar(x, y) != ' ' && board.getChar(x, y) != 'x') {
                 std::cout << "Invalid board,There is an invalid char. Choose another board..." << std::endl;
                 return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool Game::checkLadder() {
+    for (int y = 0; y < MAX_Y; ++y) {
+        for (int x = 0; x < MAX_X; ++x) {
+            if (board.getChar(x, y) == 'H') {
+                // Check below the ladder
+                if (y + 1 < MAX_Y && board.getChar(x, y + 1) == ' ') {
+                    std::cout << "Invalid board: There is a problem with the ladder. Choose another board..." << std::endl;
+                    return false;
+                }
+                // Check above the ladder
+                if (y - 1 >= 0 && board.getChar(x, y - 1) == ' ') {
+                    std::cout << "Invalid board: There is a problem with the ladder. Choose another board..." << std::endl;
+                    return false;
+                }
             }
         }
     }

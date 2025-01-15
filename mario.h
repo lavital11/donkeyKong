@@ -42,7 +42,7 @@ public:
     void falling(bool noColors);
 
     // Get whether Mario is alive
-    bool getIsAlive();
+    bool getIsAlive() const;
 
     // Move Mario based on input
     void move(bool noColors);
