@@ -106,7 +106,7 @@ void Mario::jump(bool noColors) {
     int newY = y + (2 * dir.y);
 
     if (pBoard->getChar(newX, y) == 'Q') {
-        dir = { 0, 1 };         // עדכון כיוון לתנועה אנכית בלבד
+        dir = { 0, 0 };         // עדכון כיוון לתנועה אנכית בלבד
         falling(noColors);      // התחלת נפילה
         return;
     }
@@ -143,6 +143,14 @@ void Mario::falling(bool noColors) {
     if (newX < 0 || newX >= MAX_X || newY < 0 || newY >= 24) { // שורה 24 היא רצפה
         dir = { 0, 0 };         // עצירת התנועה
         return;
+    }
+
+    for (int stepY = y + 1; stepY <= newY; ++stepY) {
+        char stepChar = pBoard->getChar(newX, stepY);
+        if (stepChar == 'Q') {  // אם יש קיר במסלול
+            dir = { 0, 0 };     // עצור תנועה
+            return;
+        }
     }
 
     char underNextChar = pBoard->getChar(newX, underNewY);
