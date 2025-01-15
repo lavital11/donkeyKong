@@ -15,6 +15,7 @@ private:
     static constexpr char keys[] = { 'w', 'a', 'x', 'd', 's' }; // Movement keys
     static constexpr size_t numKeys = sizeof(keys); // Number of movement keys
     bool isAlive = true; // Mario's life status
+    int countFall = 0;
     Game* g1;
 
 public:
@@ -69,5 +70,4 @@ public:
     bool isCollidingGhost(const Ghost& ghost) const;
 
     void erase(bool noColors);
-
 };

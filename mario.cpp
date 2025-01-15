@@ -78,6 +78,7 @@ void Mario::move(bool noColors) {
     int newY = y + dir.y;
     char nextChar = pBoard->getChar(newX, newY);
     char underChar = pBoard->getChar(x, y+1);
+
     if (dir.y == -1) // press 'w'
         caseUp(noColors); // Supports noColors
     else if (dir.y == -1 && (pBoard->getChar(x, y) == 'H')) // לעלות על הסולם
@@ -103,6 +104,7 @@ void Mario::move(bool noColors) {
 void Mario::jump(bool noColors) {
     int newX = x + lastDir.x;
     int newY = y + (2 * dir.y);
+
     if (pBoard->getChar(newX, newY) == 'H') {
         x = newX;
         y = newY;
@@ -129,12 +131,12 @@ void Mario::jump(bool noColors) {
 void Mario::falling(bool noColors) {
     int newX = x + lastDir.x;
     int newY = y + 1;
-    static int countFall = 0;
     int underNewY = newY + 1;
     char underNextChar = pBoard->getChar(newX, underNewY);
     char nextChar = pBoard->getChar(newX, newY);
     y = newY;
     x = newX;
+
     if (isOnGround()) {
         dir = lastDir; // Stop falling if obstacle below
         if (countFall >= 5) {
@@ -168,9 +170,9 @@ void Mario::printLife(int x, int y) const {
 }
 
 void Mario::printScore(int x, int y) const {
-    char scoreChar = score + '0';
+    //char scoreChar = score + '0';
     gotoxy(x,y);
-    std::cout << scoreChar;
+    std::cout << score;
 }
 
 // Check if Mario is colliding with a given barrel

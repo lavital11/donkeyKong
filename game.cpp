@@ -1,6 +1,5 @@
 ﻿#include <windows.h>
 #include <conio.h>
-#include <chrono>
 #include <time.h>
 #include <filesystem>
 #include "Game.h"
@@ -8,17 +7,19 @@
 constexpr int PAU_X = 38;
 constexpr int PAU_Y = 0;
 constexpr int ESC = 27; // ESC key code
-static constexpr int MAX_X = 80; // Maximum width of the board
-static constexpr int MAX_Y = 25; // Maximum height of the board
-static constexpr int SCORE_X = 9; // Maximum width of the board
-static constexpr int SCORE_Y = 2; // Maximum height of the board
-
+static constexpr int SCORE_X = 9; 
+static constexpr int SCORE_Y = 2; 
+static constexpr int KILL_BARREL_SCORE = 50;
+static constexpr int KILL_GHOST_SCORE = 30;
+static constexpr int LESS_THAN_A_MINUITE_SCORE = 100;
+static constexpr int FINISH_LEVEL = 300;
+static constexpr int DIE = -50;
 
 namespace fs = std::filesystem;
 using namespace std::chrono;
 
 // Constructor initializes the game state and player
-Game::Game() : isGameOver(false), isPaused(false), noColors(false), currentBoardIndex(0), hammer(nullptr, -1, -1, nullptr), player(this,-1,-1,nullptr), hammerOriginalX(0), hammerOriginalY(0) {}
+Game::Game() : isGameOver(false), isPaused(false), noColors(false), currentBoardIndex(0), hammer(nullptr, -1, -1, nullptr), player(this,-1,-1,nullptr), hammerOriginalX(0), hammerOriginalY(0), DONK_X(0), DONK_Y(0){}
 
 void Game::startGame() {
     loadBoardFiles("boards/"); // Load all board files from the "boards" directory
@@ -57,8 +58,7 @@ void Game::startGame() {
             std::cin >> boardChoice;
             if (boardChoice >= 1 && boardChoice <= static_cast<int>(boardFiles.size())) {
                 loadBoardByIndex(boardChoice - 1);
-                std::cout << "Board loaded successfully.\n";
-                Sleep(1500);
+                Sleep(3000);
             }
             else {
                 std::cout << "Invalid board number. Returning to main menu...\n";
@@ -103,17 +103,25 @@ void Game::showInstructions() {
 }
 
 void Game::runGame() {
+
     isGameOver = false;
     isPaused = false;
     player.life = 3; // Reset player's lives
+    player.score = 0; // Reset player's score
     ShowConsoleCursor(false); // Hide cursor for game aesthetics
     board.reset(boardFiles[currentBoardIndex]); // Initialize the board state
+    // Validate the default board before starting the game
+    if (!validateBoard()) {
+        Sleep(3000); // Wait for 2 seconds to let the user read the message
+        return; // Return to the main menu
+    }
     board.print(noColors); // Print the board based on color mode
     player.setBoard(board); // Associate player with the board
     createMario();
     createHammer();
     createGhost();
     createLegend();
+    startLevel();
 
     // Timers for game mechanics
     auto lastBarrelSpawnTime = steady_clock::now();
@@ -158,6 +166,7 @@ void Game::runGame() {
             lastMarioUpdateTime = currentTime;
         }
 
+        player.printScore(SCORE_X, SCORE_Y);
         collectHammer();
         checkCollision(); // Check if Mario collides with barrels
         checkLevelPass();
@@ -221,10 +230,9 @@ Point Game::getMarioPosition() const {
 }
 
 void Game::updateBarrels() {
-    static auto lastUpdateTime = steady_clock::now();
     auto currentTime = steady_clock::now();
     auto elapsedTime = duration_cast<milliseconds>(currentTime - lastUpdateTime).count();
-
+    
     if (elapsedTime >= 100) { // Update barrels every 100 milliseconds
         // Use a loop with erase to safely remove elements
         for (auto it = barrels.begin(); it != barrels.end(); ) {
@@ -304,6 +312,7 @@ void Game::handleCollision() {
     player.loseLife(); // Decrement Mario's life count
     resetBarrels(); // Clear barrels from the board
     resetGhosts();
+    player.score += DIE;
     if (player.life <= 0) { // Check if Mario has no lives left
         endGame(); // End the game
     }
@@ -313,27 +322,36 @@ void Game::handleCollision() {
 }
 
 bool Game::shouldSpawnBarrel() {
-    constexpr int spawnChance = 10; // 10% chance to spawn a barrel
+    constexpr int spawnChance = 5; // 5% chance to spawn a barrel
     return (rand() % 100) < spawnChance;
 }
 
 void Game::spawnBarrel() {
-    int startX = DONK_X; // Set initial X position of the barrel
-    int startY = DONK_Y; // Set initial Y position of the barrel
+    createDonkey();
 
-    Barrels newBarrel(&board, startX, startY, this); // Create a new barrel instance
+    Barrels newBarrel(&board, DONK_X, DONK_Y, this); // Create a new barrel instance
 
     newBarrel.setInitialDirection(); // Set the initial movement direction of the barrel
 
     barrels.push_back(newBarrel); // Add the new barrel to the list
+
 }
 
 void Game::checkLevelPass() {
     if (player.getX() == PAU_X && player.getY() == PAU_Y) // Check if Mario reached the winning position
+    {
+        endLevel();
+        gameTime = getElapsedTime();
+        if (gameTime < 60)
+        {
+            player.score += LESS_THAN_A_MINUITE_SCORE;
+        }
+        player.score += FINISH_LEVEL;
         if (currentBoardIndex + 1 < static_cast<int>(boardFiles.size()))
             nextLevel();
         else
             winGame();
+    }  
 }
 
 void Game::nextLevel() {
@@ -346,7 +364,6 @@ void Game::nextLevel() {
     if (!noColors) {
         SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY); // Set blue color for the next level message
     }
-
     printNextLevelMessage(); // Display the message for the next level
 
     if (!noColors) {
@@ -368,6 +385,7 @@ void Game::nextLevel() {
     board.print(noColors); // Display the new board
     createLegend();
     player.printLife(LIFE_X, LIFE_Y); // Display Mario's remaining lives
+    player.printScore(SCORE_X, SCORE_Y);
 }
 
 void Game::winGame() {
@@ -424,13 +442,24 @@ void Game::printWinMessage() {
     std::cout << std::string(centerColumn, ' ') << "Press any key to return to the main menu..." << std::endl;
 }
 
-void Game::printNextLevelMessage() {
+void Game::printNextLevelMessage() const {
     const int screenWidth = 80; // Total width of the console screen
     const int screenHeight = 25; // Total height of the console screen
-    const std::string line1 = "*****************************************"; // Top and bottom border of the message box
-    const std::string line2 = "*                                       *"; // Empty line for padding within the box
-    const std::string line3 = "*        YOU PASSED THIS LEVEL!         *"; // Main win message
-    const std::string line4 = "*     GOOD LUCK IN THE NEXT LEVEL!      *"; // Submessage indicating level completion
+
+    std::string line1 = "*****************************************"; // Top and bottom border of the message box
+    std::string line2 = "*                                       *";
+    std::string line3;
+    std::string line4 = "*        YOU PASSED THIS LEVEL!         *"; // Main win message
+    std::string line5 = "*          EARNED 300 POINTS!           *"; // Main win message
+    std::string line6 = "*     GOOD LUCK IN THE NEXT LEVEL!      *"; // Submessage indicating level completion
+
+    // Check if the player gets a bonus for finishing quickly
+    if (gameTime < 60) {
+        line3 = "*   100 POINTS BONUS FOR BEING FAST!    *"; // Bonus message
+    }
+    else {
+        line3 = "*                                       *"; // Empty padding
+    }
 
     const int messageHeight = 6; // Total height of the message box
     const size_t startRow = (screenHeight - messageHeight) / 2; // Vertical center of the screen
@@ -442,9 +471,11 @@ void Game::printNextLevelMessage() {
 
     // Print each line of the message box centered horizontally
     std::cout << std::string(centerColumn, ' ') << line1 << std::endl; // Top border
-    std::cout << std::string(centerColumn, ' ') << line2 << std::endl; // Padding
-    std::cout << std::string(centerColumn, ' ') << line3 << std::endl; // Main win message
-    std::cout << std::string(centerColumn, ' ') << line4 << std::endl; // Submessage
+    std::cout << std::string(centerColumn, ' ') << line2 << std::endl; // empty line
+    std::cout << std::string(centerColumn, ' ') << line3 << std::endl; // Bonus orempty line
+    std::cout << std::string(centerColumn, ' ') << line4 << std::endl; // Main win message
+    std::cout << std::string(centerColumn, ' ') << line5 << std::endl; // Submessage
+    std::cout << std::string(centerColumn, ' ') << line6 << std::endl; // Submessage
     std::cout << std::string(centerColumn, ' ') << line2 << std::endl; // Padding
     std::cout << std::string(centerColumn, ' ') << line1 << std::endl; // Bottom border
 
@@ -505,6 +536,8 @@ void Game::resetGhosts() {
 }
 
 void Game::restartLevel() {
+    countMario = 0;
+    countLegend = 0;
     resetBarrels(); // Clear all existing barrels from the game
     resetGhosts();  // Clear all existing ghosts
     resetHammer();
@@ -568,27 +601,42 @@ void Game::createHammer() {
 void Game::createLegend() {
     for (int y = 0; y < MAX_Y; ++y) {
         for (int x = 0; x < MAX_X; ++x) {
-            if (board.getChar(x, y) == 'L') { // אם מצאנו את ה-P
-                printLegend(x,y);
-                return; // סיימנו - אין צורך להמשיך לחפש
+            if (board.getChar(x, y) == 'L') { // אם מצאנו את ה-Legend
+                printLegend(x, y); // הדפס את ה-Legend
+                return; // סיימנו - לא צריך להמשיך
             }
         }
     }
-
 }
 
 void Game::createMario() {
-    int currentLife = player.life; // שמור את מספר החיים הנוכחי של מריו
-    int currentScore = player.score; // שמור את הניקוד של מריו
+    // שמור את מספר החיים והניקוד הנוכחיים של מריו
+    int currentLife = player.life;
+    int currentScore = player.score;
 
+    // סרוק את הלוח כדי למצוא את מריו
     for (int y = 0; y < MAX_Y; ++y) {
         for (int x = 0; x < MAX_X; ++x) {
             if (board.getChar(x, y) == '@') { // אם מצאנו את מריו בלוח
-                player = Mario(this, x, y, &board); // צור את מריו במיקום החדש
-                player.life = currentLife; // שחזר את מספר החיים הקודם
-                player.score = currentScore; // שחזר את הניקוד
-                player.drawStart(noColors);  // צייר את מריו בלוח
+                // צור את מריו במיקום החדש ושחזר את הפרטים הקודמים
+                player = Mario(this, x, y, &board);
+                player.life = currentLife;
+                player.score = currentScore;
+                player.drawStart(noColors); // צייר את מריו בלוח
                 return; // סיימנו
+            }
+        }
+    }
+}
+
+void Game::createDonkey() {
+    // Iterate through the board to find the '&' character
+    for (int y = 0; y < MAX_Y; y++) {
+        for (int x = 0; x < MAX_X; x++) {
+            if (board.getChar(x, y) == '&') {
+                DONK_X = x; // Set the X position of Donkey
+                DONK_Y = y; // Set the Y position of Donkey
+                return; // Exit inner loop when found
             }
         }
     }
@@ -684,6 +732,7 @@ void Game::checkAndRemoveEntities(int checkX, int checkY, bool& success) {
             it->erase(noColors); // מחק את החבית מהמסך
             it = barrels.erase(it); // הסר את החבית מהרשימה
             success = true;
+            player.score += KILL_BARREL_SCORE;
             return; // אין צורך לבדוק יותר
         }
         else {
@@ -697,6 +746,7 @@ void Game::checkAndRemoveEntities(int checkX, int checkY, bool& success) {
             it->erase(noColors); // מחק את הרוח מהמסך
             it = ghosts.erase(it); // הסר את הרוח מהרשימה
             success = true;
+            player.score += KILL_GHOST_SCORE;
             return; // אין צורך לבדוק יותר
         }
         else {
@@ -721,11 +771,172 @@ void Game::loadBoardByIndex(int index) {
         throw std::out_of_range("Board index out of range");
     }
     currentBoardIndex = index;
+
     try {
         board.loadBoardFromFile(boardFiles[currentBoardIndex]); // Load the selected board
+
+        // Validate the board
+        if (!validateBoard()) {
+            return;
+        }
+
+        std::cout << "Board loaded successfully." << std::endl;
     }
     catch (const std::exception& e) {
         std::cerr << "Error loading board: " << e.what() << std::endl;
         throw;
     }
+}
+
+void Game::startLevel()
+{
+    startTime = std::chrono::high_resolution_clock::now();
+}
+
+void Game::endLevel()
+{
+    endTime = std::chrono::high_resolution_clock::now();
+}
+
+double Game::getElapsedTime() const
+{
+    std::chrono::duration<double> elapsedTime = endTime - startTime;
+    return elapsedTime.count(); // החזרת הזמן בשניות
+}
+
+bool Game::validateBoard() {
+    drawBorders(); // צייר גבולות
+    if (!checkMario() || !checkPau() || !checkLegend() || !checkDonkey() || !checkGhost() || !checkInvalidChar()) {
+        return false;
+    }
+    else
+        return true;
+}
+
+void Game::drawBorders() {
+    for (int i = 0; i < MAX_X; i++) {
+        for (int j = 0; j < MAX_Y; j++) {
+            // Draw top and bottom borders
+            if (i == 0 || i == 79) {
+                if (board.getChar(i, j) != 'Q') {
+                    board.setChar(i, j, 'Q');
+                }
+            }
+            if (board.getChar(i,j) == '\0') {
+                board.setChar(i,j, ' ');
+            }
+            // Draw bottom row border
+            if (j == 24) {
+                if (board.getChar(i, j) != '=' && board.getChar(i, j) != '>' && board.getChar(i, j) != '<') {
+                    board.setChar(i, j, '=');
+                }
+            }
+        }
+    }
+}
+
+bool Game::checkMario() {
+    countMario = 0; // אפס את הספירה של מריו
+
+    // סרוק את הלוח כדי למצוא מופעים של '@'
+    for (int y = 0; y < MAX_Y; y++) { // הלולאה החיצונית סורקת שורות
+        for (int x = 0; x < MAX_X; x++) { // הלולאה הפנימית סורקת עמודות
+            if (board.getChar(x, y) == '@') {
+                countMario++; // עדכון הספירה
+            }
+        }
+    }
+
+    // בדוק אם יש בדיוק מופע אחד של '@'
+    if (countMario == 1) {
+        return true;
+    }
+    else {
+        std::cout << "Invalid board, no Mario or more than one. Choose another board..." << std::endl;
+        return false;
+    }
+}
+
+bool Game::checkPau() {
+    countPau = 0; 
+
+    for (int y = 0; y < MAX_Y; ++y) {
+        for (int x = 0; x < MAX_X; ++x) {
+            if (board.getChar(x, y) == '$') {
+                countPau++; // עדכון הספירה
+            }
+        }
+    }
+
+    if (countPau == 1) {
+        return true;
+    }
+    else {
+        std::cout << "Invalid board, no Pauline or more than one. Choose another board..." << std::endl;
+        return false;
+    }
+}
+
+bool Game::checkDonkey() {
+    countDonkey = 0;
+
+    for (int y = 0; y < MAX_Y; ++y) {
+        for (int x = 0; x < MAX_X; ++x) {
+            if (board.getChar(x, y) == '&') {
+                countDonkey++;
+            }
+        }
+    }
+
+    if (countDonkey == 1) {
+        return true;
+    }
+    else {
+        std::cout << "Invalid board, no DonkeyKong or more than one. Choose another board..." << std::endl;
+        return false;
+    }
+}
+
+bool Game::checkLegend() {
+    countLegend = 0;
+
+    for (int y = 0; y < MAX_Y; ++y) {
+        for (int x = 0; x < MAX_X; ++x) {
+            if (board.getChar(x, y) == 'L') {
+                countLegend++;
+            }
+        }
+    }
+
+    if (countLegend == 1) {
+        return true;
+    }
+    else {
+        std::cout << "Invalid board, no L for Legend or more than one. Choose another board..." << std::endl;
+        return false;
+    }
+}
+
+bool Game::checkGhost() {
+    for (int y = 0; y < MAX_Y; ++y) {
+        for (int x = 0; x < MAX_X; ++x) {
+            if (board.getChar(x, y) == 'x' && (board.getChar(x, y + 1) != '=' && board.getChar(x, y + 1) != '<' && board.getChar(x, y + 1) != '>')) {
+                std::cout << "Invalid board, Ghost can not be on air. Choose another board..." << std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool Game::checkInvalidChar() {
+    for (int y = 0; y < MAX_Y; ++y) {
+        for (int x = 0; x < MAX_X; ++x) {
+            if (board.getChar(x, y) != '@' && board.getChar(x, y) != '&' && board.getChar(x, y) != '$' && board.getChar(x, y) != 'L' && board.getChar(x, y) != '=' && board.getChar(x, y) != '>' && board.getChar(x, y) != '<' && board.getChar(x, y) != 'Q' && board.getChar(x, y) != 'p' && board.getChar(x, y) != 'H' && board.getChar(x, y) != ' ' && board.getChar(x, y) != 'x') {
+                std::cout << "Invalid board,There is an invalid char. Choose another board..." << std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
 }

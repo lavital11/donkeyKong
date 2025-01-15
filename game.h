@@ -6,6 +6,10 @@
 #include "Hammer.h"
 #include <string>
 #include "Board.h"
+#include <chrono>
+
+static constexpr int MAX_X = 80; // Maximum width of the board
+static constexpr int MAX_Y = 25; // Maximum height of the board
 
 // Class representing the game state and logic
 class Game {
@@ -23,6 +27,16 @@ private:
     Hammer hammer;
     int hammerOriginalX;
     int hammerOriginalY;
+    std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> endTime;
+    double gameTime = 0;
+    std::chrono::time_point<std::chrono::steady_clock> lastUpdateTime;
+    int countMario = 0;
+    int countLegend = 0;
+    int countPau = 0;
+    int countDonkey = 0;
+    int DONK_X; // X position of Donkey
+    int DONK_Y; // Y position of Donkey
 
 public:
     // Constructor
@@ -43,10 +57,11 @@ public:
     void nextLevel();
     void winGame();             // Handles win logic
     void printWinMessage();     // Displays the win message
-    void printNextLevelMessage();
+    void printNextLevelMessage() const;
     void printLoseMessage();    // Displays the lose message
     void restartLevel();        // Restarts the level after loss
     void createLegend();
+    void createDonkey();
     void printLegend(int x, int y);
     void ignoreOldGhost();
 
@@ -73,4 +88,17 @@ public:
 
     // New function to load a specific board by index
     void loadBoardByIndex(int index);
+
+    bool validateBoard();
+    void drawBorders();
+    bool checkMario();
+    bool checkPau();
+    bool checkDonkey();
+    bool checkLegend();
+    bool checkGhost();
+    bool checkInvalidChar();
+
+    void startLevel();
+    void endLevel();
+    double getElapsedTime() const;
 };

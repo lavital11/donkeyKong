@@ -94,5 +94,21 @@ void Board::print(bool noColors) const {
 
 // Retrieves the character at a specific position on the board
 char Board::getChar(int x, int y) const {
-    return currentBoard[y][x];
+    if (x >= 0 && x < MAX_X && y >= 0 && y < MAX_Y) {
+        return currentBoard[y][x];
+    }
+    return '\0'; // Return null character if out of bounds
+}
+
+// Retrieves the length of a row (ignoring trailing spaces)
+int Board::getRowLength(int y) const {
+    if (y < 0 || y >= MAX_Y) {
+        return 0; // Return 0 for invalid rows
+    }
+
+    int length = MAX_X;
+    while (length > 0 && currentBoard[y][length - 1] == ' ') {
+        --length; // Skip trailing spaces
+    }
+    return length;
 }

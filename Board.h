@@ -40,4 +40,7 @@ public:
     void setChar(int x, int y, char c) {
         currentBoard[y][x] = c;
     }
+
+    // Retrieves the length of a row (ignoring trailing spaces)
+    int getRowLength(int y) const;
 };
