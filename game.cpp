@@ -106,7 +106,6 @@ void Game::showInstructions() {
 }
 
 void Game::runGame() {
-
     isGameOver = false;
     isPaused = false;
     player.life = 3; // Reset player's lives
@@ -135,10 +134,8 @@ void Game::runGame() {
     constexpr int barrelSpawnInterval = 1500; // Interval for spawning barrels (milliseconds)
     constexpr int barrelUpdateInterval = 100; // Interval for updating barrels (milliseconds)
     constexpr int marioUpdateInterval = 80; // Interval for updating Mario (milliseconds)
-
     while (!isGameOver) {
         auto currentTime = steady_clock::now(); // Get current time      
-
         if (_kbhit()) { // Check for keyboard input
             char key = _getch();
             if (key == ESC) // Handle pause
@@ -152,7 +149,6 @@ void Game::runGame() {
         // Update barrels at regular intervals
         if (duration_cast<milliseconds>(currentTime - lastBarrelUpdateTime).count() >= barrelUpdateInterval) {
             updateBarrels();
-            updateGhosts();
             lastBarrelUpdateTime = currentTime;
         }
 
@@ -171,10 +167,10 @@ void Game::runGame() {
         }
 
         player.printScore(SCORE_X, SCORE_Y);
+        updateGhosts();
         collectHammer();
         checkCollision(); // Check if Mario collides with barrels
         checkLevelPass();
-
         Sleep(10); // Short sleep to reduce CPU usage
     }
 }
@@ -274,20 +270,9 @@ void Game::updateGhosts() {
             }
         }
 
-        // Check for collisions between ghosts
-        for (size_t i = 0; i < ghosts.size(); ++i) {
-            for (size_t j = i + 1; j < ghosts.size(); ++j) {
-                if (ghosts[i].getX() == ghosts[j].getX() && ghosts[i].getY() == ghosts[j].getY()) {
-                    ghosts[i].changeDir();
-                    ghosts[j].changeDir();
-                }
-            }
-        }
-
         for (auto& ghost : ghosts) {
-            ghost.move(noColors); // Update ghost position
+            ghost.move(noColors, ghosts);
         }
-
         lastUpdateTime = currentTime; // Reset the timer for next update
     }
 }

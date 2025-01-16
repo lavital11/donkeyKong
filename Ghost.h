@@ -11,7 +11,7 @@ class Ghost : public Point
 public:
 	Ghost(Board* board, int startX, int startY, Game* game, char symbol = 'x')
 		: Point(startX, startY, symbol, board), g1(game) {}
-	void move(bool noColors);
+	void move(bool noColors, const std::vector<Ghost>& ghosts);
 	void setInitialDirection();
 	bool shouldRemove() const { return toRemove; }
 	void changeDir();

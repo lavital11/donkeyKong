@@ -1,12 +1,21 @@
 ﻿#include "Ghost.h"
 
-void Ghost::move(bool noColors) {
-    erase(noColors); // Erase the barrel from its current position with noColors support
-    int newX = x + dir.x; // Calculate new horizontal position
-    char nextChar = pBoard->getChar(newX, y); // Character at the next position
-    char belowNextChar = pBoard->getChar(x+dir.x, y + 1);  // Character directly below the barrel
+void Ghost::move(bool noColors, const std::vector<Ghost>& ghosts) {
+    erase(noColors); // מחיקת הרוח מהמיקום הנוכחי
+    int newX = x + dir.x; // חישוב המיקום האופקי הבא
+    char nextChar = pBoard->getChar(newX, y); // קבלת התו במיקום הבא
+    char belowNextChar = pBoard->getChar(x + dir.x, y + 1); // קבלת התו מתחת למיקום הבא
 
-    // If there's space below or face a wall, changing direction
+    // טיפול בהתנגשות עם רוחות אחרות
+    for (const auto& otherGhost : ghosts) {
+        if (&otherGhost != this && otherGhost.getX() == newX && otherGhost.getY() == y) {
+            dir.x = -dir.x; // שינוי כיוון במקרה של התנגשות
+            newX = x + dir.x;
+            break;
+        }
+    }
+
+    // בדיקה אם יש קיר או שטח פנוי מתחת
     if (belowNextChar == ' ' || nextChar == 'Q') {
         dir.x = -dir.x;
         newX = x + dir.x;
@@ -14,17 +23,19 @@ void Ghost::move(bool noColors) {
         return;
     }
     else {
-        constexpr int ChangeDirChance = 5; // 5% chance to change direction
+        constexpr int ChangeDirChance = 5;
         if ((rand() % 100) <= ChangeDirChance) {
             dir.x = -dir.x;
             newX = x + dir.x;
             x = newX;
         }
-        else
+        else {
             x = newX;
+        }
     }
-    draw(noColors); // Draw the barrel at the new position with optional color support
-    lastDir = dir; // Update the last movement direction   
+
+    draw(noColors); // צביעת הרוח במקום החדש
+    lastDir = dir; // עדכון כיוון התנועה האחרון
 }
 
 void Ghost::setInitialDirection() {

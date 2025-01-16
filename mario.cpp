@@ -140,7 +140,7 @@ void Mario::falling(bool noColors) {
     int underNewY = newY + 1;   // המיקום מתחת למיקום החדש בציר Y
 
     // בדיקת גבולות
-    if (newX < 0 || newX >= MAX_X || newY < 0 || newY >= 24) { // שורה 24 היא רצפה
+    if (newX < 0 || newX >= MAX_X || newY < 0 || newY >= MAX_Y-1) { // שורה 24 היא רצפה
         dir = { 0, 0 };         // עצירת התנועה
         return;
     }
