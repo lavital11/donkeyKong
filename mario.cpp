@@ -73,7 +73,6 @@ void Mario::caseDown(bool noColors) {
     }
 }
 
-
 // General movement function for Mario
 void Mario::move(bool noColors) {
     int newX = x + dir.x;

@@ -17,32 +17,66 @@ Board::Board(const std::string& filename) {
 void Board::loadBoardFromFile(const std::string& filename) {
     std::ifstream inFile(filename);
     if (!inFile) {
-        // If the file cannot be opened, throw an error
         throw std::runtime_error("Failed to open file: " + filename);
     }
 
     std::string line;
-    int y = 0; // Tracks the current row being processed
+    int y = 0; // Tracks the current row being processed in the board
 
-    // Read each line of the file until MAX_Y rows are reached
+    // Read each line from the file up to the maximum number of rows (25)
     while (std::getline(inFile, line) && y < MAX_Y) {
-        if (line.length() > MAX_X) {
-            // If the line exceeds the maximum width, throw an error
-            throw std::runtime_error("Line in file exceeds MAX_X");
+        if (line.size() > static_cast<std::string::size_type>(MAX_X)) {
+            // Truncate the line to MAX_X characters
+            line = line.substr(0, static_cast<std::string::size_type>(MAX_X));
+            if (line[static_cast<std::string::size_type>(MAX_X - 1)] != 'Q') {
+                line[static_cast<std::string::size_type>(MAX_X - 1)] = 'Q';
+            }
         }
 
-        // Copy the line content into the board array
-        std::strncpy(currentBoard[y], line.c_str(), MAX_X);
-        currentBoard[y][MAX_X] = '\0'; // Ensure null termination for each row
+        if (line.size() < static_cast<std::string::size_type>(MAX_X)) {
+            // Pad the line with spaces
+            line.append(static_cast<std::string::size_type>(MAX_X - line.size()), ' ');
+            line[static_cast<std::string::size_type>(MAX_X - 1)] = 'Q';
+        }
+
+        // Copy the line to the board array
+        std::copy(line.begin(), line.end(), currentBoard[y]);
+        currentBoard[y][MAX_X] = '\0';
         ++y;
     }
 
-    // Verify the file contains the required number of rows
-    if (y != MAX_Y) {
-        throw std::runtime_error("File does not contain the required number of lines");
+    // Ignore extra lines beyond MAX_Y
+    while (std::getline(inFile, line)) {
+        // Skip extra lines
     }
 
-    inFile.close(); // Close the file
+    // Validate or fix the 25th row (if it exists)
+    if (y == MAX_Y) {
+        // Check and fix the 25th row
+        currentBoard[MAX_Y - 1][0] = 'Q'; // Ensure the first character is Q
+        currentBoard[MAX_Y - 1][MAX_X - 1] = 'Q'; // Ensure the last character is Q
+
+        // Replace invalid characters between the first and last 'Q'
+        for (int i = 1; i < MAX_X - 1; ++i) {
+            char c = currentBoard[MAX_Y - 1][i];
+            if (c != '=' && c != '<' && c != '>') {
+                currentBoard[MAX_Y - 1][i] = '='; // Replace invalid characters with '='
+            }
+        }
+    }
+
+    // Fill the remaining rows if fewer than MAX_Y
+    while (y < MAX_Y) {
+        std::string emptyRow(static_cast<std::string::size_type>(MAX_X), '=');
+        emptyRow[0] = 'Q';
+        emptyRow[static_cast<std::string::size_type>(MAX_X - 1)] = 'Q';
+
+        std::copy(emptyRow.begin(), emptyRow.end(), currentBoard[y]);
+        currentBoard[y][MAX_X] = '\0';
+        ++y;
+    }
+
+    inFile.close();
 }
 
 // Resets the current board state to its initial configuration by reloading from the file

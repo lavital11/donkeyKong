@@ -103,6 +103,7 @@ public:
     bool checkGhost();
     bool checkInvalidChar();
     bool checkLadder();
+    bool canMarioClimb() const;
 
     void startLevel();
     void endLevel();

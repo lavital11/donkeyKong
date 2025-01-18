@@ -64,7 +64,7 @@ void Game::startGame() {
             std::cin >> boardChoice;
             if (boardChoice >= 1 && boardChoice <= static_cast<int>(boardFiles.size())) {
                 loadBoardByIndex(boardChoice - 1); // Load the selected board
-                Sleep(3000); // Pause for 3 seconds to show the loaded board
+                Sleep(2000); // Pause for 2 seconds to show the loaded board
             }
             else {
                 std::cout << "Invalid board number. Returning to main menu...\n";
@@ -117,7 +117,7 @@ void Game::runGame() {
     ShowConsoleCursor(false); // Hide the cursor for a cleaner game interface
     board.reset(boardFiles[currentBoardIndex]); // Load the current board
     if (!validateBoard()) { // Validate the board for proper setup
-        Sleep(3000); // Pause for 3 seconds to let the user read the error
+        Sleep(2000); // Pause for 2 seconds to let the user read the error
         return; // Return to the main menu if the board is invalid
     }
 
@@ -553,7 +553,7 @@ void Game::resetGhosts() {
 }
 
 // Restarts the current level, resetting all game elements
-void Game::restartLevel() {
+/*void Game::restartLevel() {
     countMario = 0; // Reset Mario counter
     countLegend = 0; // Reset legend counter
     resetBarrels(); // Clear all barrels
@@ -567,6 +567,31 @@ void Game::restartLevel() {
     createMario(); // Recreate Mario on the board
     player.drawStart(noColors); // Draw Mario at the starting position
     createLegend(); // Recreate the legend
+}*/
+
+// Restarts the current level, resetting all game elements
+void Game::restartLevel() {
+    countMario = 0;      // Reset Mario counter
+    countLegend = 0;     // Reset legend counter
+    resetBarrels();      // Clear all barrels
+    resetGhosts();       // Clear all ghosts
+    resetHammer();       // Reset hammer state
+
+    try {
+        board.loadBoardFromFile(boardFiles[currentBoardIndex]); // Reload the board from file
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Error reloading board: " << e.what() << std::endl;
+        isGameOver = true; // End the game if the board cannot be loaded
+        return;
+    }
+
+    board.print(noColors);       // Print the reset board
+    createGhost();               // Recreate ghosts on the board
+    createHammer();              // Recreate hammer on the board
+    createMario();               // Recreate Mario on the board
+    player.drawStart(noColors);  // Draw Mario at the starting position
+    createLegend();              // Recreate the legend
 }
 
 // Creates all ghosts on the board by scanning for 'x' characters
@@ -709,18 +734,18 @@ void Game::useHammer() {
 
     // Check the hammer's effect based on Mario's direction
     if (direction.x == 1 && direction.y == 0) { // Mario moving right
-        for (int dx = 1; dx <= 3; ++dx) { // Check up to 3 spaces ahead
+        for (int dx = 1; dx <= 2; ++dx) { // Check up to 2 spaces ahead
             checkAndRemoveEntities(marioX + dx, marioY, success);
         }
     }
     else if (direction.x == -1 && direction.y == 0) { // Mario moving left
-        for (int dx = -1; dx >= -3; --dx) { // Check up to 3 spaces behind
+        for (int dx = -1; dx >= -2; --dx) { // Check up to 2 spaces behind
             checkAndRemoveEntities(marioX + dx, marioY, success);
         }
     }
     else { // Mario is stationary, check all directions
         for (const auto& d : Point::directions) { // Iterate over all possible directions
-            for (int i = 1; i <= 3; ++i) { // Check up to 3 spaces in each direction
+            for (int i = 1; i <= 2; ++i) { // Check up to 2 spaces in each direction
                 checkAndRemoveEntities(marioX + d.x * i, marioY + d.y * i, success);
             }
         }
@@ -824,7 +849,7 @@ bool Game::validateBoard() {
     drawBorders(); // Draw the board's borders
 
     // Validate the presence and configuration of key elements on the board
-    if (!checkMario() || !checkPau() || !checkLegend() || !checkDonkey() || !checkGhost() || !checkInvalidChar()) {
+    if (!checkPau() || !checkLegend() || !checkDonkey() || !checkGhost() || !checkInvalidChar() || !canMarioClimb() || !checkLadder() || !checkMario()) {
         return false;
     }
     return true;
@@ -990,4 +1015,17 @@ bool Game::checkLadder() {
         }
     }
     return true; // Return true if all ladders are valid
+}
+
+bool Game::canMarioClimb() const {
+    // Check if there is a ladder ('H') in the 24th row
+    for (int x = 0; x < MAX_X; ++x) {
+        if (board.getChar(x, 23) == 'H') { // Row 24 is indexed as 23 (0-based indexing)
+            return true; // Valid: A ladder exists in the 24th row
+        }
+    }
+
+    // If no ladder exists in the 24th row
+    std::cout << "Invalid board: No ladder ('H') in row 24. Mario cannot climb." << std::endl;
+    return false;
 }
