@@ -1,38 +1,38 @@
 ﻿#include "Barrels.h"
 #include "Game.h"
 
-// Constant for the bottom line on the game board
+// Constant representing the bottom line of the game board
 constexpr int BOTTOMLINE = 23;
 
-// Causes the barrel to fall, with optional color control
+// Handles the barrel's falling behavior with optional color control
 void Barrels::falling(bool noColors) {
-    int newY = y + 1; // Move to the position directly below
-    char belowChar = pBoard->getChar(x, newY); // Character at the position below
+    int newY = y + 1; // Calculate the position directly below
+    char belowChar = pBoard->getChar(x, newY); // Get the character at the new position below
 
-    // Only move down if the space below is not occupied by solid characters
+    // Move the barrel down only if the space below is not occupied by solid characters
     if (belowChar != '=' && belowChar != '<' && belowChar != '>') {
-        erase(noColors); // Erase the barrel from its current position with noColors support
-        y = newY;        // Update the position to below
-        countFall++;     // Increment the fall step counter
-        draw(noColors);  // Draw the barrel at the new position with noColors support
-        Sleep(30);       // Slow down the fall display
+        erase(noColors); // Erase the barrel's current position
+        y = newY;        // Update the vertical position
+        countFall++;     // Increment the fall counter
+        draw(noColors);  // Draw the barrel at the new position
+        Sleep(30);       // Add a delay to control the fall speed
     }
 }
 
-// Moves the barrel according to its direction, with optional color control
+// Handles the barrel's movement logic and interactions with the environment
 void Barrels::move(bool noColors) {
-    erase(noColors); // Erase the barrel from its current position with noColors support
-    int newX = x + dir.x; // Calculate new horizontal position
-    int newY = y + dir.y; // Calculate new vertical position
-    char nextChar = pBoard->getChar(newX, newY); // Character at the next position
-    char belowChar = pBoard->getChar(x, y + 1);  // Character directly below the barrel
+    erase(noColors); // Erase the barrel's current position
+    int newX = x + dir.x; // Calculate the new horizontal position
+    int newY = y + dir.y; // Calculate the new vertical position
+    char nextChar = pBoard->getChar(newX, newY); // Get the character at the new position
+    char belowChar = pBoard->getChar(x, y + 1);  // Get the character directly below the barrel
 
-    // If there's space below, the barrel falls
+    // Check if there's empty space below for the barrel to fall
     if (belowChar == ' ') {
-        x = newX;
-        y = newY;
-        dirBefFall = dir;
-        falling(noColors); // Barrel falls with optional color control
+        x = newX; // Update horizontal position
+        y = newY; // Update vertical position
+        dirBefFall = dir; // Save the direction before falling
+        falling(noColors); // Trigger falling logic
         return;
     }
     else {
@@ -88,19 +88,20 @@ void Barrels::setInitialDirection() {
     setDirection((rand() % 2 == 0) ? -1 : 1, 0);
 }
 
+// Erases the barrel's current position, handling special cases
 void Barrels::erase(bool noColors) {
-    // בדוק אם יש פטיש מתחת לחבית
+    // Keep the hammer in place if the barrel is over it
     if (pBoard->getChar(x, y) == 'p') {
-        draw('p', noColors); // השאר את הפטיש במקום
+        draw('p', noColors); // Draw the hammer at the same position
         return;
     }
 
-
+    // Keep Donkey Kong in place if the barrel is over him
     if (pBoard->getChar(x, y) == '&') {
-        draw('&', noColors); // Keep Donkey Kong in place
+        draw('&', noColors); // Draw Donkey Kong at the same position
         return;
     }
 
-    // קריאה ללוגיקה הבסיסית של Point למחיקת החבית
+    // Use base Point logic for erasing the barrel
     Point::erase(noColors);
 }

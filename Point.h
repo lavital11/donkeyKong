@@ -55,6 +55,7 @@ public:
     // Sets the movement direction of the point
     void setDirection(int dx, int dy);
 
+    // Returns the current direction of the Point
     Direction getDirection() const;
 
     // Checks if the point is on the ground (i.e., below an obstacle)

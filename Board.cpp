@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <algorithm>
 
-// Constructor initializes the board by loading it from a file
+// Constructor: Initializes the board by loading its layout from a file
 Board::Board(const std::string& filename) {
     loadBoardFromFile(filename);
 }
@@ -17,98 +17,91 @@ Board::Board(const std::string& filename) {
 void Board::loadBoardFromFile(const std::string& filename) {
     std::ifstream inFile(filename);
     if (!inFile) {
+        // If the file cannot be opened, throw an error
         throw std::runtime_error("Failed to open file: " + filename);
     }
 
     std::string line;
-    int y = 0;
+    int y = 0; // Tracks the current row being processed
 
+    // Read each line of the file until MAX_Y rows are reached
     while (std::getline(inFile, line) && y < MAX_Y) {
         if (line.length() > MAX_X) {
+            // If the line exceeds the maximum width, throw an error
             throw std::runtime_error("Line in file exceeds MAX_X");
         }
 
-        // Copy line content to the board
+        // Copy the line content into the board array
         std::strncpy(currentBoard[y], line.c_str(), MAX_X);
-        currentBoard[y][MAX_X] = '\0'; // Ensure null termination
+        currentBoard[y][MAX_X] = '\0'; // Ensure null termination for each row
         ++y;
     }
 
+    // Verify the file contains the required number of rows
     if (y != MAX_Y) {
         throw std::runtime_error("File does not contain the required number of lines");
     }
 
-    inFile.close();
+    inFile.close(); // Close the file
 }
 
-// Resets the current board to match its initial state (reload from file)
+// Resets the current board state to its initial configuration by reloading from the file
 void Board::reset(const std::string& filename) {
     loadBoardFromFile(filename);
 }
 
 // Prints the current state of the board to the console
 void Board::print(bool noColors) const {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // Get console handle for coloring
 
-    // Set cursor position to the top-left corner
+    // Set the cursor position to the top-left corner of the console
     COORD coord = { 0, 0 };
     SetConsoleCursorPosition(hConsole, coord);
 
+    // Iterate over each row and column of the board
     for (int y = 0; y < MAX_Y; ++y) {
         for (int x = 0; x < MAX_X; ++x) {
             char currentChar = currentBoard[y][x];
 
-            // Change color based on the current character, only if noColors is false
+            // Change console text color based on the character, if noColors is false
             if (!noColors) {
                 switch (currentChar) {
-                case '=':
-                    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY); // Blue
+                case '=': // Blue for '='
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
                     break;
-                case 'H':
-                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Yellow
+                case 'H': // Yellow for 'H'
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
                     break;
                 case '<':
-                case '>':
-                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); // White
+                case '>': // White for '<' and '>'
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
                     break;
-                default:
-                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); // Default (White)
+                default: // Default (white) for other characters
+                    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
                     break;
                 }
             }
 
-            std::cout << currentChar;
+            std::cout << currentChar; // Print the current character
         }
 
-        // Print new line only if it's not the last row
+        // Print a newline after each row except the last one
         if (y < MAX_Y - 1) {
             std::cout << '\n';
         }
     }
 
-    // Reset color, only if noColors is false
+    // Reset console text color to default, if noColors is false
     if (!noColors) {
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
 }
 
-// Retrieves the character at a specific position on the board
+// Retrieves the character at a specified position on the board
 char Board::getChar(int x, int y) const {
+    // Ensure the position is within board boundaries
     if (x >= 0 && x < MAX_X && y >= 0 && y < MAX_Y) {
         return currentBoard[y][x];
     }
-    return '\0'; // Return null character if out of bounds
-}
-
-// Retrieves the length of a row (ignoring trailing spaces)
-int Board::getRowLength(int y) const {
-    if (y < 0 || y >= MAX_Y) {
-        return 0; // Return 0 for invalid rows
-    }
-
-    int length = MAX_X;
-    while (length > 0 && currentBoard[y][length - 1] == ' ') {
-        --length; // Skip trailing spaces
-    }
-    return length;
+    return '\0'; // Return null character for out-of-bounds positions
 }

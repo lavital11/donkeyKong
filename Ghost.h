@@ -1,20 +1,32 @@
 #pragma once
 #include "Point.h"
 
-class Game;
+class Game; // Forward declaration of the Game class
 
-class Ghost : public Point
-{
-	Game* g1;
-	bool toRemove = false;          // Flag indicating if the ghost should be removed
+// Class representing a Ghost, which is derived from the Point class
+class Ghost : public Point {
+private:
+    Game* g1;                     // Pointer to the Game instance
+    bool toRemove = false;        // Flag indicating if the ghost should be removed
 
 public:
-	Ghost(Board* board, int startX, int startY, Game* game, char symbol = 'x')
-		: Point(startX, startY, symbol, board), g1(game) {}
-	void move(bool noColors, const std::vector<Ghost>& ghosts);
-	void setInitialDirection();
-	bool shouldRemove() const { return toRemove; }
-	void changeDir();
-	void erase(bool noColors);
-};
+    // Constructor: Initializes the ghost with its starting position, game reference, and symbol
+    Ghost(Board* board, int startX, int startY, Game* game, char symbol = 'x')
+        : Point(startX, startY, symbol, board), g1(game) {
+    }
 
+    // Moves the ghost on the board, taking into account collisions and game logic
+    void move(bool noColors, const std::vector<Ghost>& ghosts);
+
+    // Sets the initial movement direction of the ghost
+    void setInitialDirection();
+
+    // Checks if the ghost is marked for removal
+    bool shouldRemove() const { return toRemove; }
+
+    // Changes the ghost's movement direction
+    void changeDir();
+
+    // Erases the ghost from its current position on the board
+    void erase(bool noColors);
+};

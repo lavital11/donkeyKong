@@ -10,7 +10,8 @@ class Hammer : public Point
 public:
 	Hammer(Board* board, int startX, int startY, Game* game, char symbol = 'p')
 		: Point(startX, startY, symbol, board), g1(game) {}
+
 	void printP() const;
 	void deletetP() const;
-};
 
+};

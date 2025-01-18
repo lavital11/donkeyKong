@@ -2,54 +2,58 @@
 #include "Point.h"
 #include "Board.h"
 
-// Constants
-static constexpr int LIFE_X = 16; // Maximum width of the board
-static constexpr int LIFE_Y = 1; // Maximum height of the board
+// Constants for life display position
+static constexpr int LIFE_X = 16; // X-coordinate for displaying life
+static constexpr int LIFE_Y = 1;  // Y-coordinate for displaying life
 
-class Game;
-class Barrels;
-class Ghost;
+class Game;    // Forward declaration of the Game class
+class Barrels; // Forward declaration of the Barrels class
+class Ghost;   // Forward declaration of the Ghost class
 
+// Class representing Mario, derived from the Point class
 class Mario : public Point {
 private:
+    // Movement keys and their count
     static constexpr char keys[] = { 'w', 'a', 'x', 'd', 's' }; // Movement keys
-    static constexpr size_t numKeys = sizeof(keys); // Number of movement keys
+    static constexpr size_t numKeys = sizeof(keys);             // Number of movement keys
+
     bool isAlive = true; // Mario's life status
-    int countFall = 0;
-    Game* g1;
+    int countFall = 0;   // Counter for falling state
+    Game* g1;            // Pointer to the Game object
 
 public:
-    int life = 3; // Mario's starting lives
-    int score = 0;
-    bool hasHammer = false;
+    int life = 3;        // Mario's starting lives
+    int score = 0;       // Mario's score
+    bool hasHammer = false; // Indicates if Mario has a hammer
 
-    // Constructor
+    // Constructor: Initializes Mario's position, board, and initial state
     Mario(Game* g1, int startx, int starty, Board* board)
         : Point(startx, starty, '@', board), g1(g1), life(3), isAlive(true) {
-        setSymbol('@');
+        setSymbol('@'); // Set Mario's symbol
     }
 
-    // Game initialization
+    // Draw Mario at the start of the game
     void drawStart(bool noColors);
 
-    // Handle key press
+    // Handle key press input for Mario's movement
     void keyPressed(char key);
 
-    // Mario's jump action
+    // Perform a jump action
     void jump(bool noColors);
 
-    // Manage falling state
+    // Handle Mario's falling state
     void falling(bool noColors);
 
     // Get whether Mario is alive
     bool getIsAlive() const;
 
-    // Move Mario based on input
+    // Move Mario based on the current direction
     void move(bool noColors);
 
     // Display Mario's remaining life
     void printLife(int x, int y) const;
 
+    // Display Mario's score
     void printScore(int x, int y) const;
 
     // Handle Mario's movement upward
@@ -58,16 +62,18 @@ public:
     // Handle Mario's movement downward
     void caseDown(bool noColors);
 
-    // Lose a life
+    // Lose a life and update the display
     void loseLife() {
         life -= 1;
-        printLife(LIFE_X, LIFE_Y);
+        printLife(LIFE_X, LIFE_Y); // Update life display
     }
 
-    // Check collision with a barrel
+    // Check if Mario is colliding with a barrel
     bool isCollidingBarrel(const Barrels& barrel) const;
 
+    // Check if Mario is colliding with a ghost
     bool isCollidingGhost(const Ghost& ghost) const;
 
+    // Erase Mario from the board
     void erase(bool noColors);
 };

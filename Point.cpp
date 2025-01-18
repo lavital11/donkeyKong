@@ -85,6 +85,7 @@ void Point::setDirection(int dx, int dy) {
     dir = { dx, dy };
 }
 
+// Returns the current direction of the Point
 Point::Direction Point::getDirection() const {
     return dir;
 }

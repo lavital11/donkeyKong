@@ -2,36 +2,42 @@
 #include "Point.h"
 #include "Board.h"
 
-// Forward declaration of the Game class
+// Forward declaration of the Game class to avoid circular dependencies
 class Game;
 
 class Barrels : public Point {
 private:
-    bool explodeKillMario = false; // Flag to determine if the barrel will explode and kill Mario
-    bool toRemove = false;          // Flag indicating if the barrel should be removed
-    Game* g1;                      // Pointer to the game instance
-    int countFall = 0;              // Counter for how many times the barrel has fallen
+    bool explodeKillMario = false; // Flag to indicate if the barrel will explode and kill Mario
+    bool toRemove = false;         // Flag to indicate if the barrel should be removed from the game
+    Game* g1;                      // Pointer to the Game instance for accessing game-related data
+    int countFall = 0;             // Counter to track the number of consecutive falls of the barrel
 
 public:
-    // Constructor to initialize a Barrels object with starting position, game instance, and optional symbol
+    // Constructor: Initializes a Barrels object with the starting position, game instance, 
+    // optional symbol, and the board it interacts with
     Barrels(Board* board, int startX, int startY, Game* game, char symbol = 'O')
         : Point(startX, startY, symbol, board), g1(game) {
     }
 
-    // Manages the falling behavior of the barrel
+    // Handles the falling behavior of the barrel, including updating its position 
+    // and managing interactions during the fall
     void falling(bool noColors);
 
-    // Moves the barrel according to its current direction
+    // Moves the barrel in its current direction, handles collisions with the environment, 
+    // and determines if the barrel needs to change direction or explode
     void move(bool noColors);
 
-    // Sets the initial direction of the barrel when it's spawned
+    // Sets the initial movement direction of the barrel when it is spawned, 
+    // randomly choosing between left (-1) or right (1)
     void setInitialDirection();
 
-    // Checks if the barrel should be removed from the game
+    // Returns whether the barrel should be removed from the game
     bool shouldRemove() const { return toRemove; }
 
-    // Checks if the barrel will explode and kill Mario upon collision
+    // Returns whether the barrel's explosion will kill Mario upon collision
     bool isExplodeAndKillMario() const { return explodeKillMario; }
 
+    // Erases the barrel's current position on the board, ensuring special elements 
+    // like the hammer or Donkey Kong remain in place if they overlap with the barrel
     void erase(bool noColors);
 };

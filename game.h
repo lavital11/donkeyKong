@@ -22,7 +22,7 @@ private:
     Board board;                // The game board
     Mario player;               // The main player (Mario)
     std::vector<Barrels> barrels; // List of barrels in the game
-    std::vector<Ghost> ghosts; // List of ghosts in the game
+    std::vector<Ghost> ghosts;  // List of ghosts in the game
     std::vector<std::string> boardFiles; // List of board file paths
     int currentBoardIndex;               // Index of the currently loaded board
     Hammer hammer;
@@ -38,31 +38,31 @@ private:
     int countDonkey = 0;
     int DONK_X; // X position of Donkey
     int DONK_Y; // Y position of Donkey
-    int PAU_X; // X position of Donkey
-    int PAU_Y;
+    int PAU_X;  // X position of Pau
+    int PAU_Y;  // Y position of Pau
 
 public:
     // Constructor
     Game();
 
     // Functions for managing the game
-    void startGame();           // Displays the opening menu
-    void runGame();             // Runs the main game loop
-    void pauseGame();           // Pauses the game
-    void resumeGame();          // Resumes the game from pause
-    void endGame();             // Ends the game
+    void startGame();                  // Displays the opening menu
+    void runGame();                    // Runs the main game loop
+    void pauseGame();                  // Pauses the game
+    void resumeGame();                 // Resumes the game from pause
+    void endGame();                    // Ends the game
 
     // Auxiliary functions
-    void showInstructions();    // Displays game instructions
-    void checkCollision();      // Checks if Mario collides with barrels
-    void handleCollision();     // Handles collisions
+    void showInstructions();           // Displays game instructions
+    void checkCollision();             // Checks if Mario collides with barrels
+    void handleCollision();            // Handles collisions
     void checkLevelPass();
     void nextLevel();
-    void winGame();             // Handles win logic
-    void printWinMessage() const;     // Displays the win message
+    void winGame();                    // Handles win logic
+    void printWinMessage() const;      // Displays the win message
     void printNextLevelMessage() const;
-    void printLoseMessage();    // Displays the lose message
-    void restartLevel();        // Restarts the level after loss
+    void printLoseMessage();           // Displays the lose message
+    void restartLevel();               // Restarts the level after loss
     void createLegend();
     void createDonkey();
     void createPau();
@@ -70,15 +70,15 @@ public:
     void ignoreOldGhost();
 
     // Barrel management functions
-    void updateBarrels();       // Updates the state of the barrels in the game loop
+    void updateBarrels();              // Updates the state of the barrels in the game loop
     void updateGhosts();
-    void spawnBarrel();         // Spawns a new barrel in the game
-    void resetBarrels();        // Resets the state of the barrels
+    void spawnBarrel();                // Spawns a new barrel in the game
+    void resetBarrels();               // Resets the state of the barrels
     void resetGhosts();
 
     // Helper functions
-    bool shouldSpawnBarrel();   // Checks if a new barrel should be spawned
-    Point getMarioPosition() const; // Returns the current position of Mario
+    bool shouldSpawnBarrel();          // Checks if a new barrel should be spawned
+    Point getMarioPosition() const;    // Returns the current position of Mario
 
     void createGhost();
     void createHammer();
@@ -87,6 +87,7 @@ public:
     void useHammer();
     void checkAndRemoveEntities(int checkX, int checkY, bool& success);
     void createMario();
+
     // New function to load board files
     void loadBoardFiles(const std::string& directory);
 
