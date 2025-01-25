@@ -26,6 +26,36 @@ using namespace std::chrono;
 // Constructor: Initializes the game state and player
 Game::Game() : isGameOver(false), isPaused(false), noColors(false), currentBoardIndex(0), hammer(nullptr, -1, -1, nullptr), player(this,-1,-1,nullptr), hammerOriginalX(0), hammerOriginalY(0), DONK_X(0), DONK_Y(0), PAU_X(0), PAU_Y(0) {}
 
+Game& Game::operator=(const Game& other) {
+    if(this != &other) { // Prevent self-assignment
+        isGameOver = other.isGameOver;
+        isPaused = other.isPaused;
+        noColors = other.noColors;
+        board = other.board; // Assuming 'Board' has a valid operator=
+        player = other.player; // Assuming 'Mario' has a valid operator=
+        barrels = other.barrels; // Assuming vector supports copy assignment
+        ghosts = other.ghosts;
+        boardFiles = other.boardFiles;
+        currentBoardIndex = other.currentBoardIndex;
+        hammer = other.hammer;
+        hammerOriginalX = other.hammerOriginalX;
+        hammerOriginalY = other.hammerOriginalY;
+        startTime = other.startTime;
+        endTime = other.endTime;
+        gameTime = other.gameTime;
+        lastUpdateTime = other.lastUpdateTime;
+        countMario = other.countMario;
+        countLegend = other.countLegend;
+        countPau = other.countPau;
+        countDonkey = other.countDonkey;
+        DONK_X = other.DONK_X;
+        DONK_Y = other.DONK_Y;
+        PAU_X = other.PAU_X;
+        PAU_Y = other.PAU_Y;
+    }
+    return *this;
+}
+
 // Main game loop: Displays the menu and starts the game based on user choice
 void Game::startGame() {
     loadBoardFiles("boards/"); // Load all board files from the "boards" directory
@@ -601,7 +631,13 @@ void Game::createGhost() {
     for (int y = 0; y < MAX_Y; ++y) {
         for (int x = 0; x < MAX_X; ++x) {
             if (board.getChar(x, y) == 'x') { // Check for ghost markers
-                Ghost newGhost(&board, x, y, this); // Create a new ghost
+                Ghost newGhost(&board, x, y,'x', this, false); // Create a new ghost
+                newGhost.setInitialDirection(); // Set its initial direction
+                ghosts.push_back(newGhost); // Add it to the ghost list
+            }
+            else if (board.getChar(x, y) == 'X')
+            {
+                Ghost newGhost(&board, x, y,'X', this, true); // Create a new ghost
                 newGhost.setInitialDirection(); // Set its initial direction
                 ghosts.push_back(newGhost); // Add it to the ghost list
             }
@@ -974,7 +1010,7 @@ bool Game::checkLegend() {
 bool Game::checkGhost() {
     for (int y = 0; y < MAX_Y; ++y) {
         for (int x = 0; x < MAX_X; ++x) {
-            if (board.getChar(x, y) == 'x' && (board.getChar(x, y + 1) != '=' && board.getChar(x, y + 1) != '<' && board.getChar(x, y + 1) != '>')) {
+            if ((board.getChar(x, y) == 'x' || board.getChar(x, y) == 'X') && (board.getChar(x, y + 1) != '=' && board.getChar(x, y + 1) != '<' && board.getChar(x, y + 1) != '>')) {
                 std::cout << "Invalid board, Ghost can not be on air. Choose another board..." << std::endl;
                 return false;
             }
@@ -991,7 +1027,7 @@ bool Game::checkInvalidChar() {
             // Check if the character is not part of the valid set
             if (currentChar != '@' && currentChar != '&' && currentChar != '$' && currentChar != 'L' &&
                 currentChar != '=' && currentChar != '>' && currentChar != '<' && currentChar != 'Q' &&
-                currentChar != 'p' && currentChar != 'H' && currentChar != ' ' && currentChar != 'x') {
+                currentChar != 'p' && currentChar != 'H' && currentChar != ' ' && currentChar != 'x' && currentChar != 'X') {
                 std::cout << "Invalid board, there is an invalid char. Choose another board..." << std::endl;
                 return false; // Return false if an invalid character is found
             }

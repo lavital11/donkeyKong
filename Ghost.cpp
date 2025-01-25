@@ -6,8 +6,11 @@ void Ghost::move(bool noColors, const std::vector<Ghost>& ghosts) {
 
     // Calculate the next horizontal position and retrieve board characters at and below the new position
     int newX = x + dir.x;
+    int newY = y + dir.y;
     char nextChar = pBoard->getChar(newX, y);
     char belowNextChar = pBoard->getChar(x + dir.x, y + 1);
+    char underFloor = pBoard->getChar(x, y + 2);
+    char belowChar = pBoard->getChar(x, y + 1);
 
     // Handle collisions with other ghosts
     for (const auto& otherGhost : ghosts) {
@@ -23,9 +26,42 @@ void Ghost::move(bool noColors, const std::vector<Ghost>& ghosts) {
         dir.x = -dir.x; // Reverse direction if the ghost can't continue moving
         newX = x + dir.x;
         x = newX;
-        return;
+    }
+    else if (pBoard->getChar(x, y) == 'H' && dir.y == 0 && canClimb == true)
+    {
+        constexpr int chooseToClimb = 20; // Chance (percentage) for random direction change
+        if ((rand() % 100) <= chooseToClimb)
+        {
+            climbLadder(noColors);
+        }
+        else
+            x = newX;
+    }
+    else if (nextChar == 'H' && dir.y == -1 && canClimb == true)
+    {
+        climbLadder(noColors);
+    }
+    else if (underFloor == 'H' && dir.y == 0 && canClimb == true)
+    {
+        constexpr int chooseToClimb = 20; // Chance (percentage) for random direction change
+        if ((rand() % 100) <= chooseToClimb) {
+            y = y + 2;
+            downOnLadder(noColors);
+        }
+        else
+            x = newX;
+    }
+    
+    else if (belowChar == 'H' && dir.y == 1 && canClimb == true)
+    {
+        downOnLadder(noColors);
+    }
+    else if ((belowChar == '>' || belowChar == '<' || belowChar == '=') && dir.y == 1 && canClimb == true)
+    {
+        dir = { 1,0 };
     }
     else {
+
         constexpr int ChangeDirChance = 5; // Chance (percentage) for random direction change
         if ((rand() % 100) <= ChangeDirChance) {
             dir.x = -dir.x; // Randomly reverse direction
@@ -60,4 +96,32 @@ void Ghost::erase(bool noColors) {
 
     // Call the base logic from Point to erase the ghost
     Point::erase(noColors);
+}
+
+void Ghost::climbLadder(bool noColors)
+{
+    dir = { 0,-1 };
+    int newX = x;
+    int newY = dir.y + y;
+    char nextChar = pBoard->getChar(x, newY);
+    if ((nextChar == '>') || (nextChar == '<') || (nextChar == '=')) { // Moving past ladder symbols
+        draw('H', noColors);
+        dir = { 1,0 };
+        y = y - 2; // Continue upward movement
+    }
+    else
+    {
+        x = newX;
+        y = newY;
+    }
+}
+
+void Ghost::downOnLadder(bool noColors)
+{
+    dir = { 0, 1 };
+    int newX = x;
+    int newY = y + dir.y;
+
+    x = newX;
+    y = newY;
 }

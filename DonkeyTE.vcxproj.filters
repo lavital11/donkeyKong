@@ -42,6 +42,18 @@
     <ClCompile Include="Hammer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Steps.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Results.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoGame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ManuGame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mario.h">
@@ -68,5 +80,20 @@
     <ClInclude Include="Hammer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Steps.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Results.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoGame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ManuGame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\..\Desktop\.gitignore" />
   </ItemGroup>
 </Project>

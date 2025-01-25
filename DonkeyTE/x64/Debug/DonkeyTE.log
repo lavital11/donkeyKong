@@ -1,2 +1,9 @@
-﻿  Game.cpp
-  DonkeyTE.vcxproj -> C:\Users\eladnulman\source\repos\JANUARY16-0200\x64\Debug\DonkeyTE.exe
+﻿  AutoGame.cpp
+  Barrels.cpp
+  Game.cpp
+  ManuGame.cpp
+  Results.cpp
+  main.cpp
+  mario.cpp
+  Generating Code...
+  DonkeyTE.vcxproj -> C:\Users\eladnulman\source\repos\JANUARY18-2210\x64\Debug\DonkeyTE.exe

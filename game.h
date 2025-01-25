@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include "Steps.h"
+#include "Results.h"
 #include "Mario.h"
 #include "Barrels.h"
 #include <vector>
@@ -23,8 +25,6 @@ private:
     Mario player;               // The main player (Mario)
     std::vector<Barrels> barrels; // List of barrels in the game
     std::vector<Ghost> ghosts;  // List of ghosts in the game
-    std::vector<std::string> boardFiles; // List of board file paths
-    int currentBoardIndex;               // Index of the currently loaded board
     Hammer hammer;
     int hammerOriginalX;
     int hammerOriginalY;
@@ -41,9 +41,15 @@ private:
     int PAU_X;  // X position of Pau
     int PAU_Y;  // Y position of Pau
 
+protected :
+    std::vector<std::string> boardFiles; // List of board file paths
+    int currentBoardIndex;               // Index of the currently loaded board
+
 public:
     // Constructor
     Game();
+
+    virtual Game& operator=(const Game & other);
 
     // Functions for managing the game
     void startGame();                  // Displays the opening menu

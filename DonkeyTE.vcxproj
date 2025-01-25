@@ -129,24 +129,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AutoGame.cpp" />
     <ClCompile Include="Barrels.cpp" />
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Ghost.cpp" />
     <ClCompile Include="Hammer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ManuGame.cpp" />
     <ClCompile Include="mario.cpp" />
     <ClCompile Include="Point.cpp" />
+    <ClCompile Include="Results.cpp" />
+    <ClCompile Include="Steps.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AutoGame.h" />
     <ClInclude Include="Barrels.h" />
     <ClInclude Include="Board.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Ghost.h" />
     <ClInclude Include="Hammer.h" />
+    <ClInclude Include="ManuGame.h" />
     <ClInclude Include="mario.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="Results.h" />
+    <ClInclude Include="Steps.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
