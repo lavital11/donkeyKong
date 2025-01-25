@@ -8,16 +8,17 @@ class Ghost : public Point {
 private:
     Game* g1;                     // Pointer to the Game instance
     bool toRemove = false;        // Flag indicating if the ghost should be removed
+    bool canClimb;
+
 
 public:
     // Constructor: Initializes the ghost with its starting position, game reference, and symbol
-    Ghost(Board* board, int startX, int startY, Game* game, char symbol = 'x')
-        : Point(startX, startY, symbol, board), g1(game) {
+    Ghost(Board* board, int startX, int startY,char symbol, Game* game, bool canClimb)
+        : Point(startX, startY,symbol, board), g1(game), canClimb(canClimb) {
     }
 
     // Moves the ghost on the board, taking into account collisions and game logic
     void move(bool noColors, const std::vector<Ghost>& ghosts);
-
     // Sets the initial movement direction of the ghost
     void setInitialDirection();
 
@@ -29,4 +30,8 @@ public:
 
     // Erases the ghost from its current position on the board
     void erase(bool noColors);
+    // 
+    void climbLadder(bool noColors);
+
+    void downOnLadder(bool noColors);
 };
