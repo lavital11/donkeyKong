@@ -34,6 +34,9 @@ public:
 	bool isFinishedBy(size_t iteration) const {
 		return results.empty() || (results.back().first <= iteration) && (results.back().second == 1);
 	}
+	std::pair<size_t, ResultValue> back() {
+		return results.back();
+	}
 
 	size_t getNextDeadIteration() const;
 

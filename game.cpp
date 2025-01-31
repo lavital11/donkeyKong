@@ -63,9 +63,9 @@ createPau();
 startLevel();
 
 // Timers for controlling game updates
+
 auto lastBarrelSpawnTime = steady_clock::now();
-auto lastBarrelUpdateTime = steady_clock::now();
-auto lastMarioUpdateTime = steady_clock::now();
+
 constexpr int barrelSpawnInterval = 1500; // Milliseconds between barrel spawns
 
     
@@ -73,7 +73,7 @@ while (!isGameOver) {
     gameTime++;
     auto currentTime = steady_clock::now(); // Get the current time
     inputAction();
-    if (getIsAuto()) {
+     if (getIsAuto()) {
         if (results.isFinishedBy(gameTime)) {
             reportResultError("Results file reached finish while game hadn't!", resultsFilename, gameTime);
             break;
@@ -88,25 +88,22 @@ while (!isGameOver) {
      //Spawn barrels at regular intervals
     if (duration_cast<milliseconds>(currentTime - lastBarrelSpawnTime).count() >= barrelSpawnInterval) {
             spawnBarrel();
-        lastBarrelSpawnTime = currentTime;
+            lastBarrelSpawnTime = currentTime;
     }
-        
-            
-        
 
+    updateGhosts(); // Update ghost positions
     player.erase(noColors); // Erase Mario's current position
     player.move(noColors); // Update Mario's position
     player.draw(noColors); // Draw Mario in the new position
+    
     Sleep(40);
     
-
     player.printScore(SCORE_X, SCORE_Y); // Update score display
-    updateGhosts(); // Update ghost positions
     collectHammer(); // Check if Mario collects the hammer
     checkCollision(); // Handle collisions with barrels or ghosts
-    if (isGameOver && getIsAuto()) // becuse maybe hanldeCullosion change isGameOver to true
+     if (isGameOver && getIsAuto()) // becuse maybe hanldeCullosion change isGameOver to true
         break;
-    if (nextDeadIteration == gameTime && getIsAuto()) {
+     if (nextDeadIteration == gameTime && getIsAuto()) {
         reportResultError("Results file has a mario death event that didn't happen!", resultsFilename, gameTime);
         break;
     }
@@ -254,7 +251,7 @@ void Game::checkCollision() {
 void Game::handleCollision() {
     if(getIsSave())
         results.addResult(gameTime, Results::loseLife);
-    else if (getIsAuto())
+     else if (getIsAuto())
     {
         if (results.popResult() != std::pair{ gameTime, 0 }) {
             reportResultError("Results file doesn't match mario death!", resultsFilename, gameTime);
@@ -296,7 +293,7 @@ void Game::checkLevelPass() {
             saveResultsAfterFinish();
         }
         if (getIsAuto()) {
-            if (results.popResult() != std::pair{ player.score, 2 }) {
+            if (results.back() != std::pair{ player.score, 2 }) {
                 reportResultError("Results file doesn't match mario score!", resultsFilename, gameTime);
                 isGameOver = true;
                 return;
