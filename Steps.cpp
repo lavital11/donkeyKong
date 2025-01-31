@@ -4,7 +4,7 @@
 Steps Steps::loadSteps(const std::string& filename) {
 	Steps steps;
 	std::ifstream steps_file(filename);
-	steps_file >> steps.randomSeed;
+	steps_file >> steps.random_seed;
 	size_t size;
 	steps_file >> size;
 	while (!steps_file.eof() && size-- != 0) {
@@ -19,7 +19,7 @@ Steps Steps::loadSteps(const std::string& filename) {
 
 void Steps::saveSteps(const std::string& filename) const {
 	std::ofstream steps_file(filename);
-	steps_file << randomSeed << '\n' << steps.size();
+	steps_file << random_seed << '\n' << steps.size();
 	for (const auto& step : steps) {
 		steps_file << '\n' << step.first << ' ' << step.second;
 	}

@@ -1,27 +1,41 @@
 ﻿#include "AutoGame.h"
+#include <iostream>
+#include <fstream>
 
-AutoGame& AutoGame::operator=(const AutoGame& other)
-{
+namespace fs = std::filesystem;
+using namespace std::chrono;
+
+// בנאי
+AutoGame::AutoGame(bool silentMode, const std::vector<std::string>& stepsFiles, const std::vector<std::string>& resultsFiles)
+    : Game(), silentMode(silentMode), stepsFiles(stepsFiles), resultsFiles(resultsFiles) {
+}
+
+// אופרטור השמה
+AutoGame& AutoGame::operator=(const AutoGame& other) {
     if (this != &other) {
-        Game::operator=(other); // Call base class assignment
-        // Copy specific AutoGame members here
-        //this->autoMode = other.autoMode;
+        Game::operator=(other); // קריאה לאופרטור ההשמה של מחלקת הבסיס
+        silentMode = other.silentMode;
+        stepsFiles = other.stepsFiles;
+        resultsFiles = other.resultsFiles;
     }
     return *this;
 }
 
-void AutoGame::canRun(const std::vector<std::string>& stepsFiles, const std::vector<std::string>& resultsFiles) {
+// הפעלת המשחק האוטומטי
+void AutoGame::startGame() {
+    loadBoardFiles("boards/"); // Load all board files from the "boards" directory
     for (size_t i = 0; i < stepsFiles.size(); ++i) {
         stepsFilename = stepsFiles[i];
-        resultsFilename = resultsFiles[i];
+        resultsFilename = i < resultsFiles.size() ? resultsFiles[i] : ""; // תמיכה במצב ללא קובץ תוצאות
 
-        if (!Steps::isEmptyFile(stepsFilename)) {
-            steps = Steps::loadSteps(stepsFilename);
-            random_seed = steps.getRandomSeed();
-            results = Results::loadResults(resultsFilename);
+        if (!Steps::isEmptyFile(stepsFilename)) { // בדיקה אם קובץ הצעדים ריק
+            currentBoardIndex = i;
+            steps = Steps::loadSteps(stepsFilename);         // טעינת קובץ הצעדים
+            random_seed = steps.getRandomSeed();             // הגדרת seed אקראי
+            srand(random_seed);
+            results = Results::loadResults(resultsFilename); // טעינת קובץ התוצאות (אם קיים)
 
-            // Run the game for the current screen (optional logic here)
-            runGameForCurrentScreen(); // Logic for running one screen
+            runGame(); // הרצת המסך הנוכחי
         }
         else {
             std::cout << "Screen " << i + 1 << " cannot be played. ";
@@ -41,7 +55,14 @@ void AutoGame::canRun(const std::vector<std::string>& stepsFiles, const std::vec
     }
 }
 
-void AutoGame::runGameForCurrentScreen()
-{
 
+
+
+void AutoGame::inputAction() {
+    if (steps.isNextStepOnIteration(gameTime)) {
+        char action = steps.popStep();
+        if (action == 'p' || action == 'P') useHammer();
+
+        player.keyPressed(action);
+    }
 }

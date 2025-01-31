@@ -16,12 +16,13 @@ Results Results::loadResults(const std::string& filename) {
 	return results;
 }
 
-void Results::saveResults(const std::string& filename) const {
+void Results::saveResults(const std::string& filename, int ourScore) const {
 	std::ofstream results_file(filename);
-	results_file << results.size();
+	results_file << results.size() + 1;
 	for (const auto& result : results) {
 		results_file << '\n' << result.first << ' ' << result.second;
 	}
+	results_file << '\n' << ourScore << ' ' << score;
 	results_file.close();
 }
 

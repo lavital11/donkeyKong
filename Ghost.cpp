@@ -96,6 +96,12 @@ void Ghost::erase(bool noColors) {
 
     // Call the base logic from Point to erase the ghost
     Point::erase(noColors);
+    if (pBoard->getChar(x, y) == '&') {
+        draw('&'); // Do not erase the donkeyKong
+    }
+    if (pBoard->getChar(x, y) == '$') {
+        draw('$'); // Do not erase paulin 
+    }
 }
 
 void Ghost::climbLadder(bool noColors)

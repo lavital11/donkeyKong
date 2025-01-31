@@ -1,33 +1,15 @@
 ﻿#include <windows.h>
-#include <conio.h>
-#include <time.h>
-#include <filesystem>
 #include "Game.h"
-
-// Constants for key codes, scores, and menu options
-constexpr int ESC = 27; // ESC key code
-static constexpr int SCORE_X = 9;
-static constexpr int SCORE_Y = 2;
-static constexpr int KILL_BARREL_SCORE = 50;
-static constexpr int KILL_GHOST_SCORE = 30;
-static constexpr int LESS_THAN_A_MINUITE_SCORE = 100;
-static constexpr int FINISH_LEVEL = 300;
-static constexpr int DIE = -50;
-static constexpr int WITH_COLORS = 1;
-static constexpr int NO_COLORS = 2;
-static constexpr int SPEC_BOARD = 3;
-static constexpr int INSTRUCTIONS = 8;
-static constexpr int EXIT = 9;
 
 // Using namespace for filesystem and time utilities
 namespace fs = std::filesystem;
 using namespace std::chrono;
 
 // Constructor: Initializes the game state and player
-Game::Game() : isGameOver(false), isPaused(false), noColors(false), currentBoardIndex(0), hammer(nullptr, -1, -1, nullptr), player(this,-1,-1,nullptr), hammerOriginalX(0), hammerOriginalY(0), DONK_X(0), DONK_Y(0), PAU_X(0), PAU_Y(0) {}
+Game::Game() : isGameOver(false), isPaused(false), noColors(false), currentBoardIndex(0), hammer(nullptr, -1, -1, nullptr), player(this, -1, -1, nullptr), hammerOriginalX(0), hammerOriginalY(0), DONK_X(0), DONK_Y(0), PAU_X(0), PAU_Y(0), gameTime(gameTime), random_seed(0) {}
 
 Game& Game::operator=(const Game& other) {
-    if(this != &other) { // Prevent self-assignment
+    if (this != &other) { // Prevent self-assignment
         isGameOver = other.isGameOver;
         isPaused = other.isPaused;
         noColors = other.noColors;
@@ -56,160 +38,87 @@ Game& Game::operator=(const Game& other) {
     return *this;
 }
 
-// Main game loop: Displays the menu and starts the game based on user choice
-void Game::startGame() {
-    loadBoardFiles("boards/"); // Load all board files from the "boards" directory
-    int choice = 0; // Variable for storing user menu choice
-    do {
-        system("cls"); // Clear the console screen
-        std::cout << "(1) Start a new game with colors" << std::endl;
-        std::cout << "(2) Start a new game without colors" << std::endl;
-        std::cout << "(3) Select a specific board" << std::endl;
-        std::cout << "(8) Present instructions and keys" << std::endl;
-        std::cout << "(9) EXIT" << std::endl;
-        std::cout << "Enter your choice: ";
-        std::cin >> choice;
 
-        switch (choice) {
-        case WITH_COLORS: // Start a game with colors enabled
-            noColors = false;
-            system("cls");
-            runGame();
-            break;
-
-        case NO_COLORS: // Start a game without colors
-            noColors = true;
-            system("cls");
-            runGame();
-            break;
-
-        case SPEC_BOARD: { // Allow the user to select a specific board
-            system("cls");
-            std::cout << "Available boards:\n";
-            for (size_t i = 0; i < boardFiles.size(); ++i) {
-                std::cout << "(" << i + 1 << ") " << boardFiles[i] << "\n";
-            }
-            std::cout << "Enter the board number to load: ";
-            int boardChoice;
-            std::cin >> boardChoice;
-            if (boardChoice >= 1 && boardChoice <= static_cast<int>(boardFiles.size())) {
-                loadBoardByIndex(boardChoice - 1); // Load the selected board
-                Sleep(2000); // Pause for 2 seconds to show the loaded board
-            }
-            else {
-                std::cout << "Invalid board number. Returning to main menu...\n";
-                Sleep(1500); // Pause for 1.5 seconds before returning to the menu
-            }
-            break;
-        }
-
-        case INSTRUCTIONS: // Display game instructions
-            system("cls");
-            showInstructions();
-            break;
-
-        case EXIT: // Exit the game
-            std::cout << "Exiting the game. Goodbye!" << std::endl;
-            break;
-
-        default: // Handle invalid menu choices
-            std::cout << "Invalid choice. Please try again." << std::endl;
-            std::cin.clear();             // Clear the error flag on cin
-            std::cin.ignore(256, '\n');   // Ignore the invalid input
-            Sleep(1500); // Pause for 1.5 seconds for user feedback
-            break;
-        }
-    } while (choice != EXIT); // Exit the loop when the user chooses to quit
-}
-
-// Displays instructions for the game
-void Game::showInstructions() {
-    system("cls");
-    std::cout << "Welcome to the game!" << std::endl;
-    std::cout << "Instructions:" << std::endl;
-    std::cout << "Use the following keys to control Mario:" << std::endl;
-    std::cout << "'W' - Jump or climb up the ladder" << std::endl;
-    std::cout << "'A' - Move left" << std::endl;
-    std::cout << "'D' - Move right" << std::endl;
-    std::cout << "'X' - Climb down the ladder" << std::endl;
-    std::cout << "'ESC' - Pause the game" << std::endl;
-    std::cout << "Press any key to return to the main menu..." << std::endl;
-    std::cin.ignore(); // Handle leftover input
-    std::cin.get(); // Wait for the user to press a key
-}
-
-// Runs the main game logic after starting or resuming
 void Game::runGame() {
-    isGameOver = false;
-    isPaused = false;
-    player.life = 3; // Reset player's lives
-    player.score = 0; // Reset player's score
-    ShowConsoleCursor(false); // Hide the cursor for a cleaner game interface
-    board.reset(boardFiles[currentBoardIndex]); // Load the current board
-    if (!validateBoard()) { // Validate the board for proper setup
-        Sleep(2000); // Pause for 2 seconds to let the user read the error
-        return; // Return to the main menu if the board is invalid
-    }
-
-    // Initialize the game elements
-    board.print(noColors);
-    player.setBoard(board);
-    createMario();
-    createHammer();
-    createGhost();
-    createLegend();
-    createPau();
-    startLevel();
-
-    // Timers for controlling game updates
-    auto lastBarrelSpawnTime = steady_clock::now();
-    auto lastBarrelUpdateTime = steady_clock::now();
-    auto lastMarioUpdateTime = steady_clock::now();
-
-    constexpr int barrelSpawnInterval = 1500; // Milliseconds between barrel spawns
-    constexpr int barrelUpdateInterval = 100; // Milliseconds between barrel updates
-    constexpr int marioUpdateInterval = 80;   // Milliseconds between Mario updates
-
-    // Game loop
-    while (!isGameOver) {
-        auto currentTime = steady_clock::now(); // Get the current time
-
-        // Check for keyboard input
-        if (_kbhit()) {
-            char key = _getch();
-            if (key == ESC) pauseGame(); // Pause game if ESC is pressed
-            else if (key == 'p' || key == 'P') useHammer(); // Use hammer if 'P' is pressed
-            else player.keyPressed(key); // Handle other key inputs
-        }
-
-        // Update barrels at regular intervals
-        if (duration_cast<milliseconds>(currentTime - lastBarrelUpdateTime).count() >= barrelUpdateInterval) {
-            updateBarrels();
-            lastBarrelUpdateTime = currentTime;
-        }
-
-        // Spawn barrels at regular intervals
-        if (duration_cast<milliseconds>(currentTime - lastBarrelSpawnTime).count() >= barrelSpawnInterval) {
-            spawnBarrel();
-            lastBarrelSpawnTime = currentTime;
-        }
-
-        // Update Mario at regular intervals
-        if (duration_cast<milliseconds>(currentTime - lastMarioUpdateTime).count() >= marioUpdateInterval) {
-            player.erase(noColors); // Erase Mario's current position
-            player.move(noColors); // Update Mario's position
-            player.draw(noColors); // Draw Mario in the new position
-            lastMarioUpdateTime = currentTime;
-        }
-
-        player.printScore(SCORE_X, SCORE_Y); // Update score display
-        updateGhosts(); // Update ghost positions
-        collectHammer(); // Check if Mario collects the hammer
-        checkCollision(); // Handle collisions with barrels or ghosts
-        checkLevelPass(); // Check if Mario passes the level
-        Sleep(10); // Add a short delay to reduce CPU usage
-    }
+startTime = std::chrono::steady_clock::now();
+isGameOver = false;
+isPaused = false;
+player.life = 3; // Reset player's lives
+player.score = 0; // Reset player's score
+ShowConsoleCursor(false); // Hide the cursor for a cleaner game interface
+board.reset(boardFiles[currentBoardIndex]); // Load the current board
+if (!validateBoard()) { // Validate the board for proper setup
+    Sleep(2000); // Pause for 2 seconds to let the user read the error
+    return; // Return to the main menu if the board is invalid
 }
+
+// Initialize the game elements
+board.print(noColors);
+player.setBoard(board);
+createMario();
+createHammer();
+createGhost();
+createLegend();
+createPau();
+startLevel();
+
+// Timers for controlling game updates
+auto lastBarrelSpawnTime = steady_clock::now();
+auto lastBarrelUpdateTime = steady_clock::now();
+auto lastMarioUpdateTime = steady_clock::now();
+constexpr int barrelSpawnInterval = 1500; // Milliseconds between barrel spawns
+
+    
+while (!isGameOver) {
+    gameTime++;
+    auto currentTime = steady_clock::now(); // Get the current time
+    inputAction();
+    if (getIsAuto()) {
+        if (results.isFinishedBy(gameTime)) {
+            reportResultError("Results file reached finish while game hadn't!", resultsFilename, gameTime);
+            break;
+        }
+        else
+             nextDeadIteration = results.getNextDeadIteration();
+     }
+    
+
+        updateBarrels();
+
+     //Spawn barrels at regular intervals
+    if (duration_cast<milliseconds>(currentTime - lastBarrelSpawnTime).count() >= barrelSpawnInterval) {
+            spawnBarrel();
+        lastBarrelSpawnTime = currentTime;
+    }
+        
+            
+        
+
+    player.erase(noColors); // Erase Mario's current position
+    player.move(noColors); // Update Mario's position
+    player.draw(noColors); // Draw Mario in the new position
+    Sleep(40);
+    
+
+    player.printScore(SCORE_X, SCORE_Y); // Update score display
+    updateGhosts(); // Update ghost positions
+    collectHammer(); // Check if Mario collects the hammer
+    checkCollision(); // Handle collisions with barrels or ghosts
+    if (isGameOver && getIsAuto()) // becuse maybe hanldeCullosion change isGameOver to true
+        break;
+    if (nextDeadIteration == gameTime && getIsAuto()) {
+        reportResultError("Results file has a mario death event that didn't happen!", resultsFilename, gameTime);
+        break;
+    }
+
+
+    checkLevelPass(); // Check if Mario passes the level
+    Sleep(10); // Add a short delay to reduce CPU usage
+
+}
+}
+
+
 
 // Pauses the game and displays a message
 void Game::pauseGame() {
@@ -240,6 +149,10 @@ void Game::resumeGame() {
 
 // Ends the game and displays the "Game Over" message
 void Game::endGame() {
+    if (isSave)
+    {
+        saveStepAfterFinish();
+    }
     isGameOver = true; // Set the game-over state
     restartLevel(); // Reset the level for a fresh start
     system("cls"); // Clear the screen
@@ -338,14 +251,25 @@ void Game::checkCollision() {
     }
 }
 
-// Handles the logic for when Mario collides with an obstacle
 void Game::handleCollision() {
+    if(getIsSave())
+        results.addResult(gameTime, Results::loseLife);
+    else if (getIsAuto())
+    {
+        if (results.popResult() != std::pair{ gameTime, 0 }) {
+            reportResultError("Results file doesn't match mario death!", resultsFilename, gameTime);
+            isGameOver = true;
+        }
+        
+            nextDeadIteration = results.getNextDeadIteration();
+
+    }
+    
     player.erase(noColors); // Erase Mario from his current position
     player.loseLife(); // Decrease Mario's life count
     resetBarrels(); // Clear all barrels from the game
     resetGhosts(); // Clear all ghosts
     player.score += DIE; // Deduct points for losing a life
-
     if (player.life <= 0) { // If Mario has no lives left
         endGame(); // End the game
     }
@@ -353,6 +277,41 @@ void Game::handleCollision() {
         restartLevel(); // Restart the current level
     }
 }
+
+void Game::checkLevelPass() {
+    if (player.getX() == PAU_X && player.getY() == PAU_Y) { // Check if Mario reached the finish
+        if (getIsSave())
+            results.addResult(gameTime, Results::finishLevel);
+        endLevel(); // Stop the level timer
+        gameTime = static_cast<size_t>(getElapsedTime()); // Calculate elapsed time for the level
+
+        if (gameTime < 60) { // Award bonus points for completing the level quickly
+            player.score += LESS_THAN_A_MINUITE_SCORE;
+        }
+
+        player.score += FINISH_LEVEL; // Award points for finishing the level
+        saveStepAfterFinish();
+
+        if (getIsSave()) {
+            saveResultsAfterFinish();
+        }
+        if (getIsAuto()) {
+            if (results.popResult() != std::pair{ player.score, 2 }) {
+                reportResultError("Results file doesn't match mario score!", resultsFilename, gameTime);
+                isGameOver = true;
+                return;
+            }
+        }
+
+        if (currentBoardIndex + 1 < static_cast<int>(boardFiles.size())) {
+            nextLevel(); // Move to the next level if available
+        }
+        else {
+            winGame(); // End the game with a victory if all levels are completed
+        }
+    }
+}
+
 
 // Determines if a barrel should be spawned based on random chance
 bool Game::shouldSpawnBarrel() {
@@ -364,29 +323,8 @@ bool Game::shouldSpawnBarrel() {
 void Game::spawnBarrel() {
     createDonkey(); // Ensure Donkey Kong's position is set
     Barrels newBarrel(&board, DONK_X, DONK_Y, this); // Create a new barrel
-    newBarrel.setInitialDirection(); // Set the barrel's initial direction
+    newBarrel.setInitialDirection(barrels.size()); // Set the barrel's initial direction
     barrels.push_back(newBarrel); // Add the barrel to the list
-}
-
-// Checks if Mario has reached the level's finishing point
-void Game::checkLevelPass() {
-    if (player.getX() == PAU_X && player.getY() == PAU_Y) { // Check if Mario reached the finish
-        endLevel(); // Stop the level timer
-        gameTime = getElapsedTime(); // Calculate elapsed time for the level
-
-        if (gameTime < 60) { // Award bonus points for completing the level quickly
-            player.score += LESS_THAN_A_MINUITE_SCORE;
-        }
-
-        player.score += FINISH_LEVEL; // Award points for finishing the level
-
-        if (currentBoardIndex + 1 < static_cast<int>(boardFiles.size())) {
-            nextLevel(); // Move to the next level if available
-        }
-        else {
-            winGame(); // End the game with a victory if all levels are completed
-        }
-    }
 }
 
 // Moves to the next level in the game
@@ -424,6 +362,7 @@ void Game::nextLevel() {
 
 // Ends the game with a win message and resets the game state
 void Game::winGame() {
+    //results.addResult(gameTime, score);
     isGameOver = true; // Mark the game as over
     currentBoardIndex = 0; // Reset to the first board
     restartLevel(); // Reset the level state
@@ -583,23 +522,6 @@ void Game::resetGhosts() {
 }
 
 // Restarts the current level, resetting all game elements
-/*void Game::restartLevel() {
-    countMario = 0; // Reset Mario counter
-    countLegend = 0; // Reset legend counter
-    resetBarrels(); // Clear all barrels
-    resetGhosts(); // Clear all ghosts
-    resetHammer(); // Reset hammer state
-
-    board.reset(boardFiles[currentBoardIndex]); // Reload the board
-    board.print(noColors); // Print the reset board
-    createGhost(); // Recreate ghosts on the board
-    createHammer(); // Recreate hammer on the board
-    createMario(); // Recreate Mario on the board
-    player.drawStart(noColors); // Draw Mario at the starting position
-    createLegend(); // Recreate the legend
-}*/
-
-// Restarts the current level, resetting all game elements
 void Game::restartLevel() {
     countMario = 0;      // Reset Mario counter
     countLegend = 0;     // Reset legend counter
@@ -631,13 +553,13 @@ void Game::createGhost() {
     for (int y = 0; y < MAX_Y; ++y) {
         for (int x = 0; x < MAX_X; ++x) {
             if (board.getChar(x, y) == 'x') { // Check for ghost markers
-                Ghost newGhost(&board, x, y,'x', this, false); // Create a new ghost
+                Ghost newGhost(&board, x, y, 'x', this, false); // Create a new ghost
                 newGhost.setInitialDirection(); // Set its initial direction
                 ghosts.push_back(newGhost); // Add it to the ghost list
             }
             else if (board.getChar(x, y) == 'X')
             {
-                Ghost newGhost(&board, x, y,'X', this, true); // Create a new ghost
+                Ghost newGhost(&board, x, y, 'X', this, true); // Create a new ghost
                 newGhost.setInitialDirection(); // Set its initial direction
                 ghosts.push_back(newGhost); // Add it to the ghost list
             }
@@ -1064,4 +986,12 @@ bool Game::canMarioClimb() const {
     // If no ladder exists in the 24th row
     std::cout << "Invalid board: No ladder ('H') in row 24. Mario cannot climb." << std::endl;
     return false;
+}
+
+void Game::reportResultError(const std::string& message, const std::string& filename, size_t iteration) {
+    system("cls");
+    std::cout << "Screen " << filename << " - " << message << '\n';
+    std::cout << "Iteration: " << iteration << '\n';
+    std::cout << "Press any key to continue to next screens (if any)" << std::endl;
+    _getch();
 }

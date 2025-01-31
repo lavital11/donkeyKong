@@ -59,7 +59,7 @@ void Point::erase(bool noColors) {
         }
     }
 
-    if ((x == DONK_X) && (y == DONK_Y)) {
+    if (pBoard->getChar(x, y) == '&') {
         draw('&', noColors);
     }
 }

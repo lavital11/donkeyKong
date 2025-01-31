@@ -86,6 +86,7 @@ void Board::reset(const std::string& filename) {
 
 // Prints the current state of the board to the console
 void Board::print(bool noColors) const {
+ 
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // Get console handle for coloring
 
     // Set the cursor position to the top-left corner of the console
@@ -129,6 +130,7 @@ void Board::print(bool noColors) const {
     if (!noColors) {
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
     }
+
 }
 
 // Retrieves the character at a specified position on the board

@@ -28,8 +28,7 @@ public:
     void move(bool noColors);
 
     // Sets the initial movement direction of the barrel when it is spawned, 
-    // randomly choosing between left (-1) or right (1)
-    void setInitialDirection();
+    void setInitialDirection(int size);
 
     // Returns whether the barrel should be removed from the game
     bool shouldRemove() const { return toRemove; }

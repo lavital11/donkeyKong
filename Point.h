@@ -4,8 +4,7 @@
 #include "utils.h"
 
 // Constants
-constexpr int DONK_X = 38;
-constexpr int DONK_Y = 3;
+
 
 class Point {
 public:

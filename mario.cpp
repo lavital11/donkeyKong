@@ -203,7 +203,7 @@ bool Mario::isCollidingBarrel(const Barrels& barrel) const {
 
 // Check if Mario is colliding with a ghost
 bool Mario::isCollidingGhost(const Ghost& ghost) const {
-    return (getX() == ghost.getX() && getY() == ghost.getY());
+    return ((getX() == ghost.getX() && getY() == ghost.getY()) ||(getX()+dir.x == ghost.getX() && getY()+dir.y == ghost.getY()) );
 }
 
 // Erase Mario from the board

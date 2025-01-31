@@ -84,8 +84,8 @@ void Barrels::move(bool noColors) {
 }
 
 // Sets the initial movement direction for the barrel
-void Barrels::setInitialDirection() {
-    setDirection((rand() % 2 == 0) ? -1 : 1, 0);
+void Barrels::setInitialDirection(int size) {
+    setDirection(size % 2 == 0 ? -1 : 1, 0);
 }
 
 // Erases the barrel's current position, handling special cases
