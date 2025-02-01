@@ -1,7 +1,8 @@
 ﻿#include "Point.h"
 
 // Draws the character `c` at the current position, with optional color handling
-void Point::draw(char c, bool noColors) const {
+void Point::draw(char c, bool noColors, bool isSilent) const {
+    if (isSilent) return;
     gotoxy(x, y);
     if (!noColors) {
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -28,12 +29,13 @@ void Point::draw(char c, bool noColors) const {
 }
 
 // Overloaded draw method that calls the other draw method with the current character `ch`
-void Point::draw(bool noColors) const {
-    draw(ch, noColors);
+void Point::draw(bool noColors, bool isSilent) const {
+    draw(ch, noColors, isSilent);
 }
 
 // Erases the current point by drawing a blank space over it based on the current context
-void Point::erase(bool noColors) {
+void Point::erase(bool noColors, bool isSilent) {
+    if (isSilent) return;
     int newX = x + dir.x;
     int newY = y + dir.y;
     char nextChar = pBoard->getChar(newX, newY);
@@ -41,26 +43,26 @@ void Point::erase(bool noColors) {
     char underChar = pBoard->getChar(x, underY);
 
     if ((nextChar == 'H') && ((dir.y == -1) || (dir.y == 1))) {
-        draw('H', noColors);
+        draw('H', noColors, isSilent);
     }
     else if ((nextChar == ' ') && (underChar == 'H') && ((dir.x == -1) || (dir.x == 1))) {
-        draw('H', noColors);
+        draw('H', noColors, isSilent);
     }
     else if (pBoard->getChar(x, y) == 'Q') {
-        draw('Q', noColors);
+        draw('Q', noColors, isSilent);
     }
     else {
-        draw(' ', noColors);
+        draw(' ', noColors, isSilent);
     }
 
     if ((dir.x == 1) || (dir.x == -1)) {
         if (pBoard->getChar(x, y - 1) == 'H') {
-            draw('H', noColors);
+            draw('H', noColors, isSilent);
         }
     }
 
     if (pBoard->getChar(x, y) == '&') {
-        draw('&', noColors);
+        draw('&', noColors, isSilent);
     }
 }
 

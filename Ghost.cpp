@@ -1,8 +1,8 @@
 ﻿#include "Ghost.h"
 
 // Moves the ghost based on its current direction and interactions with other ghosts or the board
-void Ghost::move(bool noColors, const std::vector<Ghost>& ghosts) {
-    erase(noColors); // Erase the ghost from its current position
+void Ghost::move(bool noColors, const std::vector<Ghost>& ghosts,bool isSilent) {
+    erase(noColors,isSilent); // Erase the ghost from its current position
 
     // Calculate the next horizontal position and retrieve board characters at and below the new position
     int newX = x + dir.x;
@@ -32,14 +32,14 @@ void Ghost::move(bool noColors, const std::vector<Ghost>& ghosts) {
         constexpr int chooseToClimb = 20; // Chance (percentage) for random direction change
         if ((rand() % 100) <= chooseToClimb)
         {
-            climbLadder(noColors);
+            climbLadder(noColors, isSilent);
         }
         else
             x = newX;
     }
     else if (nextChar == 'H' && dir.y == -1 && canClimb == true)
     {
-        climbLadder(noColors);
+        climbLadder(noColors, isSilent);
     }
     else if (underFloor == 'H' && dir.y == 0 && canClimb == true)
     {
@@ -73,7 +73,7 @@ void Ghost::move(bool noColors, const std::vector<Ghost>& ghosts) {
         }
     }
 
-    draw(noColors); // Draw the ghost in the new position
+    draw(noColors, isSilent); // Draw the ghost in the new position
     lastDir = dir;  // Update the last movement direction
 }
 
@@ -88,30 +88,30 @@ void Ghost::changeDir() {
 }
 
 // Erases the ghost from the board
-void Ghost::erase(bool noColors) {
+void Ghost::erase(bool noColors, bool isSilent) {
     // Check if there's a hammer below the ghost
     if (pBoard->getChar(x, y) == 'p') {
         return; // Do not erase the hammer
     }
 
     // Call the base logic from Point to erase the ghost
-    Point::erase(noColors);
+    Point::erase(noColors, isSilent);
     if (pBoard->getChar(x, y) == '&') {
-        draw('&'); // Do not erase the donkeyKong
+        draw('&', isSilent); // Do not erase the donkeyKong
     }
     if (pBoard->getChar(x, y) == '$') {
-        draw('$'); // Do not erase paulin 
+        draw('$',isSilent); // Do not erase paulin 
     }
 }
 
-void Ghost::climbLadder(bool noColors)
+void Ghost::climbLadder(bool noColors, bool isSilent)
 {
     dir = { 0,-1 };
     int newX = x;
     int newY = dir.y + y;
     char nextChar = pBoard->getChar(x, newY);
     if ((nextChar == '>') || (nextChar == '<') || (nextChar == '=')) { // Moving past ladder symbols
-        draw('H', noColors);
+        draw('H', noColors, isSilent);
         dir = { 1,0 };
         y = y - 2; // Continue upward movement
     }

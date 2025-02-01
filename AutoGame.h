@@ -3,7 +3,7 @@
 
 class AutoGame : public Game {
 private:
-    bool silentMode;                              // מצב שקט - אם נכון, המשחק רץ ללא תצוגה
+    bool isSilent;                              // מצב שקט - אם נכון, המשחק רץ ללא תצוגה
     std::vector<std::string> stepsFiles;         // רשימת קבצי צעדים
     std::vector<std::string> resultsFiles;       // רשימת קבצי תוצאות
 public:
@@ -14,5 +14,10 @@ public:
     
     void saveStepAfterFinish() override {}
     void saveResultsAfterFinish() override{}
+    void setIsSilent(bool is) override {
+        isSilent = is;
+    }
+    bool readFiles(int i) override;
+    bool isSilentMode() const override { return isSilent; }
 
 };

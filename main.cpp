@@ -27,12 +27,14 @@ int main(int argc, char** argv) {
             g1 = new AutoGame(isSilent, stepsFiles, resultsFiles);
             g1->setIsAuto(true);
             g1->setIsSave(false);
+            g1->setIsSilent(isSilent);
         }
         // מצב רגיל עם שמירה
         else if (isSave) {
             g1 = new ManuGame(true, stepsFiles, resultsFiles);
             g1->setIsAuto(false);
             g1->setIsSave(true);
+
 
         }
         // מצב רגיל ללא שמירה

@@ -34,7 +34,7 @@ public:
 
     // Prints the current state of the board to the console
     // If `noColors` is true, text is displayed without any color formatting
-    void print(bool noColors) const;
+    void print(bool noColors, bool isSilent) const; 
 
     // Retrieves the character at a specific position on the board
     // Returns '\0' if the specified position is out of bounds

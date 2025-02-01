@@ -14,7 +14,8 @@ void Barrels::falling(bool noColors) {
         erase(noColors); // Erase the barrel's current position
         y = newY;        // Update the vertical position
         countFall++;     // Increment the fall counter
-        draw(noColors);  // Draw the barrel at the new position
+        draw(noColors, g1->isSilentMode());  // Draw the barrel at the new position
+        if(!g1->isSilentMode())
         Sleep(30);       // Add a delay to control the fall speed
     }
 }
@@ -69,7 +70,7 @@ void Barrels::move(bool noColors) {
     }
     else if (nextChar == 'Q') {
         dir = { 0, 0 }; // Stop the barrel if it hits a wall
-        draw(noColors); // Draw the barrel with optional color support
+        draw(noColors, g1->isSilentMode()); // Draw the barrel with optional color support
         return;
     }
 
@@ -79,7 +80,7 @@ void Barrels::move(bool noColors) {
         y = newY;
     }
 
-    draw(noColors); // Draw the barrel at the new position with optional color support
+    draw(noColors,g1->isSilentMode()); // Draw the barrel at the new position with optional color support
     lastDir = dir; // Update the last movement direction
 }
 
@@ -92,16 +93,16 @@ void Barrels::setInitialDirection(int size) {
 void Barrels::erase(bool noColors) {
     // Keep the hammer in place if the barrel is over it
     if (pBoard->getChar(x, y) == 'p') {
-        draw('p', noColors); // Draw the hammer at the same position
+        draw('p', noColors, g1->isSilentMode()); // Draw the hammer at the same position
         return;
     }
 
     // Keep Donkey Kong in place if the barrel is over him
     if (pBoard->getChar(x, y) == '&') {
-        draw('&', noColors); // Draw Donkey Kong at the same position
+        draw('&', noColors, g1->isSilentMode()); // Draw Donkey Kong at the same position
         return;
     }
 
     // Use base Point logic for erasing the barrel
-    Point::erase(noColors);
+    Point::erase(noColors, g1->isSilentMode());
 }

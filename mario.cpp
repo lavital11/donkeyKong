@@ -4,11 +4,11 @@
 #include "Ghost.h"
 
 // Draw Mario at the starting position
-void Mario::drawStart(bool noColors) {
+void Mario::drawStart(bool noColors, bool isSilent) {
     dir = { 0, 0 };          // Initialize direction to stationary
     lastDir = { 0, 0 };      // Initialize the last direction
     isAlive = true;          // Set Mario as alive
-    draw(noColors);          // Draw Mario (supports noColors)
+    draw(noColors, isSilent);          // Draw Mario (supports noColors)
 }
 
 // Handle key presses for movement
@@ -25,7 +25,7 @@ void Mario::keyPressed(char key) {
 }
 
 // Move Mario up
-void Mario::caseUp(bool noColors) {
+void Mario::caseUp(bool noColors, bool isSilent) {
     int newX = x + dir.x;
     int newY = y + dir.y;
     int aboveNewY = newY - 1;
@@ -37,16 +37,17 @@ void Mario::caseUp(bool noColors) {
         y = newY;
     }
     else if ((nextChar == '>') || (nextChar == '<') || (nextChar == '=')) { // Moving past ladder symbols
-        draw('H', noColors);
+        draw('H', noColors, isSilent);
         y = y - 2; // Continue upward movement
         dir = { 0, 0 };
     }
     else {
-        jump(noColors); // Handle jumping
-        draw(noColors);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Pause for animation
-        erase(noColors);
-        falling(noColors); // Handle falling if needed
+        jump(noColors, isSilent); // Handle jumping
+        draw(noColors, isSilent);
+        if(!isSilent)
+            std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Pause for animation
+        erase(noColors, isSilent);
+        falling(noColors, isSilent); // Handle falling if needed
     }
 }
 
@@ -74,16 +75,16 @@ void Mario::caseDown(bool noColors) {
 }
 
 // General movement function for Mario
-void Mario::move(bool noColors) {
+void Mario::move(bool noColors,bool isSilent) {
     int newX = x + dir.x;
     int newY = y + dir.y;
     char nextChar = pBoard->getChar(newX, newY);
     char underChar = pBoard->getChar(x, y + 1);
 
     if (dir.y == -1) // If 'w' is pressed
-        caseUp(noColors);
+        caseUp(noColors, isSilent);
     else if (dir.y == -1 && (pBoard->getChar(x, y) == 'H')) // Climbing up a ladder
-        caseUp(noColors);
+        caseUp(noColors, isSilent);
     else if (dir.y == 1) // If 'x' is pressed
         caseDown(noColors);
     else { // If 'a', 'd', or 's' is pressed
@@ -91,7 +92,7 @@ void Mario::move(bool noColors) {
             dir = { 0, 0 }; // Stop movement
         }
         else if (!isOnGround() && underChar != 'H') { // Falling between floors
-            falling(noColors);
+            falling(noColors, isSilent);
         }
         else {
             x = newX;
@@ -102,27 +103,27 @@ void Mario::move(bool noColors) {
 }
 
 // Handle Mario's jump
-void Mario::jump(bool noColors) {
+void Mario::jump(bool noColors, bool isSilent) {
     int newX = x + lastDir.x;
     int newY = y + (2 * dir.y);
 
     if (pBoard->getChar(newX, y) == 'Q') { // Wall collision during jump
         dir = { 0, 0 };
-        falling(noColors); // Start falling
+        falling(noColors, isSilent); // Start falling
         return;
     }
 
     if (pBoard->getChar(newX, newY) == 'H') { // Land on a ladder
         x = newX;
         y = newY;
-        draw('H', noColors);
+        draw('H', noColors, isSilent);
         dir = lastDir;
         return;
     }
     if ((pBoard->getChar(newX, newY) == '=') || (pBoard->getChar(newX, newY) == '<') || (pBoard->getChar(newX, newY) == '>')) {
         x = newX;
         y = y + dir.y;
-        draw('=', noColors);
+        draw('=', noColors, isSilent);
         dir = lastDir;
         return;
     }
@@ -135,7 +136,7 @@ void Mario::jump(bool noColors) {
 }
 
 // Handle Mario's falling
-void Mario::falling(bool noColors) {
+void Mario::falling(bool noColors, bool isSilent) {
     int newX = x + lastDir.x;
     int newY = y + 1;
     int underNewY = newY + 1;
@@ -166,15 +167,15 @@ void Mario::falling(bool noColors) {
             return;
         }
         countFall = 0;
-        draw(noColors);
-        erase(noColors);
+        draw(noColors, isSilent);
+        erase(noColors, isSilent);
     }
     else if ((nextChar == ' ') || (nextChar == 'H')) { // Continue falling
         countFall++;
         y = newY;
         x = newX;
-        draw(noColors);
-        erase(noColors);
+        draw(noColors, isSilent);
+        erase(noColors, isSilent);
     }
 }
 
@@ -184,14 +185,16 @@ bool Mario::getIsAlive() const {
 }
 
 // Display Mario's remaining lives
-void Mario::printLife(int x, int y) const {
+void Mario::printLife(int x, int y, bool isSilent) const {
+    if (isSilent) return;
     char lifeChar = life + '0'; // Convert life count to character
     gotoxy(x, y);
     std::cout << lifeChar;
 }
 
 // Display Mario's score
-void Mario::printScore(int x, int y) const {
+void Mario::printScore(int x, int y, bool isSilent) const {
+    if (isSilent) return;
     gotoxy(x, y);
     std::cout << score;
 }
@@ -207,10 +210,10 @@ bool Mario::isCollidingGhost(const Ghost& ghost) const {
 }
 
 // Erase Mario from the board
-void Mario::erase(bool noColors) {
+void Mario::erase(bool noColors, bool isSilent) {
     int newX = x + dir.x;
     int newY = y + dir.y;
     char nextChar = pBoard->getChar(newX, newY);
 
-    Point::erase(noColors); // Call the base class logic for erasing
+    Point::erase(noColors, isSilent); // Call the base class logic for erasing
 }

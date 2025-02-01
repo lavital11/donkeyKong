@@ -70,6 +70,9 @@ protected:
     
     bool isAuto;
     bool isSave;
+    bool isSilent;
+    bool flagTest = true;
+    std::string whyFailed;
 
 public:
     // Constructor
@@ -154,8 +157,13 @@ public:
     bool getIsSave() {
         return isSave;
     }
+    virtual void setIsSilent(bool is) { return; }
+    virtual bool isSilentMode() const { return false; }
     virtual void saveStepAfterFinish() = 0;
     virtual void saveResultsAfterFinish() = 0;
     void reportResultError(const std::string& message, const std::string& filename, size_t iteration);
-
+    void checkTests(bool flag);
+    virtual bool readFiles(int i) {
+        return false;
+    }
 };

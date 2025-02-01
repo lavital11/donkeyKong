@@ -85,8 +85,8 @@ void Board::reset(const std::string& filename) {
 }
 
 // Prints the current state of the board to the console
-void Board::print(bool noColors) const {
- 
+void Board::print(bool noColors, bool isSilent) const {
+    if (isSilent) return;
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // Get console handle for coloring
 
     // Set the cursor position to the top-left corner of the console

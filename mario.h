@@ -2,6 +2,7 @@
 #include "Point.h"
 #include "Board.h"
 
+
 // Constants for life display position
 static constexpr int LIFE_X = 16; // X-coordinate for displaying life
 static constexpr int LIFE_Y = 1;  // Y-coordinate for displaying life
@@ -33,39 +34,39 @@ public:
     }
 
     // Draw Mario at the start of the game
-    void drawStart(bool noColors);
+    void drawStart(bool noColors, bool isSilent);
 
     // Handle key press input for Mario's movement
     void keyPressed(char key);
 
     // Perform a jump action
-    void jump(bool noColors);
+    void jump(bool noColors, bool isSilent);
 
     // Handle Mario's falling state
-    void falling(bool noColors);
+    void falling(bool noColors, bool isSilent);
 
     // Get whether Mario is alive
     bool getIsAlive() const;
 
     // Move Mario based on the current direction
-    void move(bool noColors);
+    void move(bool noColors,bool isSilent);
 
     // Display Mario's remaining life
-    void printLife(int x, int y) const;
+    void printLife(int x, int y, bool isSilent) const;
 
     // Display Mario's score
-    void printScore(int x, int y) const;
+    void printScore(int x, int y, bool isSilent) const;
 
     // Handle Mario's movement upward
-    void caseUp(bool noColors);
+    void caseUp(bool noColors, bool isSilent);
 
     // Handle Mario's movement downward
     void caseDown(bool noColors);
 
     // Lose a life and update the display
-    void loseLife() {
+    void loseLife(bool isSilent) {
         life -= 1;
-        printLife(LIFE_X, LIFE_Y); // Update life display
+        printLife(LIFE_X, LIFE_Y,isSilent); // Update life display
     }
 
     // Check if Mario is colliding with a barrel
@@ -75,5 +76,5 @@ public:
     bool isCollidingGhost(const Ghost& ghost) const;
 
     // Erase Mario from the board
-    void erase(bool noColors);
+    void erase(bool noColors, bool isSilent);
 };

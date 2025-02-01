@@ -18,7 +18,7 @@ public:
     }
 
     // Moves the ghost on the board, taking into account collisions and game logic
-    void move(bool noColors, const std::vector<Ghost>& ghosts);
+    void move(bool noColors, const std::vector<Ghost>& ghosts, bool isSilent);
     // Sets the initial movement direction of the ghost
     void setInitialDirection();
 
@@ -29,9 +29,9 @@ public:
     void changeDir();
 
     // Erases the ghost from its current position on the board
-    void erase(bool noColors);
+    void erase(bool noColors, bool isSilent);
     // 
-    void climbLadder(bool noColors);
+    void climbLadder(bool noColors, bool isSilent);
 
     void downOnLadder(bool noColors);
 };

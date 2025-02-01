@@ -34,13 +34,13 @@ public:
     Point getPosition() const { return Point(x, y); }
 
     // Draws the point's character `c` at the current position, with optional color handling
-    void draw(char c, bool noColors) const;
+    void draw(char c, bool noColors, bool isSilent) const;
 
     // Overloaded draw method that uses the current character
-    void draw(bool noColors) const;
+    void draw(bool noColors, bool isSilent) const;
 
     // Erases the point by drawing a space over it, with optional color handling
-    virtual void erase(bool noColors);
+    virtual void erase(bool noColors, bool isSilent);
 
     // Sets the board for this point
     void setBoard(Board& board);

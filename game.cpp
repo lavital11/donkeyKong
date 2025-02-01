@@ -53,7 +53,7 @@ if (!validateBoard()) { // Validate the board for proper setup
 }
 
 // Initialize the game elements
-board.print(noColors);
+board.print(noColors, this->isSilentMode());
 player.setBoard(board);
 createMario();
 createHammer();
@@ -61,13 +61,6 @@ createGhost();
 createLegend();
 createPau();
 startLevel();
-
-// Timers for controlling game updates
-
-auto lastBarrelSpawnTime = steady_clock::now();
-
-constexpr int barrelSpawnInterval = 1500; // Milliseconds between barrel spawns
-
     
 while (!isGameOver) {
     gameTime++;
@@ -75,7 +68,10 @@ while (!isGameOver) {
     inputAction();
      if (getIsAuto()) {
         if (results.isFinishedBy(gameTime)) {
-            reportResultError("Results file reached finish while game hadn't!", resultsFilename, gameTime);
+            whyFailed = "Results file reached finish while game hadn't!";
+            if(!isSilentMode())
+                reportResultError(whyFailed, resultsFilename, gameTime);
+            flagTest = false;
             break;
         }
         else
@@ -86,31 +82,33 @@ while (!isGameOver) {
         updateBarrels();
 
      //Spawn barrels at regular intervals
-    if (duration_cast<milliseconds>(currentTime - lastBarrelSpawnTime).count() >= barrelSpawnInterval) {
+        if(shouldSpawnBarrel())
             spawnBarrel();
-            lastBarrelSpawnTime = currentTime;
-    }
+   
 
     updateGhosts(); // Update ghost positions
-    player.erase(noColors); // Erase Mario's current position
-    player.move(noColors); // Update Mario's position
-    player.draw(noColors); // Draw Mario in the new position
+    player.erase(noColors, this->isSilentMode()); // Erase Mario's current position
+    player.move(noColors, this->isSilentMode()); // Update Mario's position
+    player.draw(noColors, this->isSilentMode()); // Draw Mario in the new position
     
-    Sleep(40);
+    if (!isSilentMode())
+       Sleep(40);
     
-    player.printScore(SCORE_X, SCORE_Y); // Update score display
+    player.printScore(SCORE_X, SCORE_Y, isSilentMode()); // Update score display
     collectHammer(); // Check if Mario collects the hammer
     checkCollision(); // Handle collisions with barrels or ghosts
      if (isGameOver && getIsAuto()) // becuse maybe hanldeCullosion change isGameOver to true
         break;
      if (nextDeadIteration == gameTime && getIsAuto()) {
-        reportResultError("Results file has a mario death event that didn't happen!", resultsFilename, gameTime);
+         whyFailed = "Results file has a mario death event that didn't happen!";
+         if (!isSilentMode())
+              reportResultError(whyFailed, resultsFilename, gameTime);
+        flagTest = false;
         break;
     }
 
 
     checkLevelPass(); // Check if Mario passes the level
-    Sleep(10); // Add a short delay to reduce CPU usage
 
 }
 }
@@ -140,7 +138,7 @@ void Game::resumeGame() {
     isPaused = false; // Reset the paused state
     system("cls"); // Clear the screen
     ignoreOldGhost(); // Clear old ghost positions
-    board.print(noColors); // Reprint the board
+    board.print(noColors, isSilent); // Reprint the board
     createLegend(); // Redraw the legend
 }
 
@@ -165,11 +163,13 @@ void Game::endGame() {
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); // Reset text color
     }
 
+    if (!isAuto) {
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE)); // Clear input buffer
-    while (!_kbhit()) { // Wait for any key press
-        Sleep(100); // Reduce CPU usage while waiting
+        while (!_kbhit()) { // Wait for any key press
+            Sleep(100); // Reduce CPU usage while waiting
+        }
+        char key = _getch(); // Capture the key press to continue
     }
-    char key = _getch(); // Capture the key press to continue
 }
 
 // Returns Mario's current position as a Point object
@@ -179,10 +179,10 @@ Point Game::getMarioPosition() const {
 
 // Updates all barrels' positions and handles their removal
 void Game::updateBarrels() {
-    auto currentTime = steady_clock::now();
-    auto elapsedTime = duration_cast<milliseconds>(currentTime - lastUpdateTime).count();
+    //auto currentTime = steady_clock::now();
+    //auto elapsedTime = duration_cast<milliseconds>(currentTime - lastUpdateTime).count();
 
-    if (elapsedTime >= 100) { // Update barrels every 100 milliseconds
+    //if (elapsedTime >= 100) { // Update barrels every 100 milliseconds
         // Iterate through the barrels list
         for (auto it = barrels.begin(); it != barrels.end(); ) {
             if (it->shouldRemove()) { // Check if the barrel should be removed
@@ -198,21 +198,21 @@ void Game::updateBarrels() {
             barrel.move(noColors); // Update the barrel's position
         }
 
-        lastUpdateTime = currentTime; // Reset the timer for barrel updates
+       // lastUpdateTime = currentTime; // Reset the timer for barrel updates
     }
-}
+//}
 
 // Updates all ghosts' positions and handles their removal
 void Game::updateGhosts() {
-    static auto lastUpdateTime = steady_clock::now();
-    auto currentTime = steady_clock::now();
-    auto elapsedTime = duration_cast<milliseconds>(currentTime - lastUpdateTime).count();
+   // static auto lastUpdateTime = steady_clock::now();
+   // auto currentTime = steady_clock::now();
+   // auto elapsedTime = duration_cast<milliseconds>(currentTime - lastUpdateTime).count();
 
-    if (elapsedTime >= 100) { // Update ghosts every 100 milliseconds
+   // if (elapsedTime >= 100) { // Update ghosts every 100 milliseconds
         // Iterate through the ghosts list
         for (auto it = ghosts.begin(); it != ghosts.end(); ) {
             if (it->shouldRemove()) { // Check if the ghost should be removed
-                it->erase(noColors); // Erase the ghost from the screen
+                it->erase(noColors, isSilentMode()); // Erase the ghost from the screen
                 it = ghosts.erase(it); // Remove the ghost from the list
             }
             else {
@@ -221,11 +221,11 @@ void Game::updateGhosts() {
         }
 
         for (auto& ghost : ghosts) {
-            ghost.move(noColors, ghosts); // Update the ghost's position
+            ghost.move(noColors, ghosts, isSilentMode()); // Update the ghost's position
         }
-        lastUpdateTime = currentTime; // Reset the timer for ghost updates
+       // lastUpdateTime = currentTime; // Reset the timer for ghost updates
     }
-}
+//}
 
 // Checks collisions between Mario, barrels, and ghosts
 void Game::checkCollision() {
@@ -254,7 +254,10 @@ void Game::handleCollision() {
      else if (getIsAuto())
     {
         if (results.popResult() != std::pair{ gameTime, 0 }) {
-            reportResultError("Results file doesn't match mario death!", resultsFilename, gameTime);
+            whyFailed = "Results file doesn't match mario death!";
+            if (!isSilentMode())
+                reportResultError(whyFailed, resultsFilename, gameTime);
+            flagTest = false;
             isGameOver = true;
         }
         
@@ -262,8 +265,8 @@ void Game::handleCollision() {
 
     }
     
-    player.erase(noColors); // Erase Mario from his current position
-    player.loseLife(); // Decrease Mario's life count
+    player.erase(noColors, isSilentMode()); // Erase Mario from his current position
+    player.loseLife(isSilentMode()); // Decrease Mario's life count
     resetBarrels(); // Clear all barrels from the game
     resetGhosts(); // Clear all ghosts
     player.score += DIE; // Deduct points for losing a life
@@ -280,9 +283,8 @@ void Game::checkLevelPass() {
         if (getIsSave())
             results.addResult(gameTime, Results::finishLevel);
         endLevel(); // Stop the level timer
-        gameTime = static_cast<size_t>(getElapsedTime()); // Calculate elapsed time for the level
 
-        if (gameTime < 60) { // Award bonus points for completing the level quickly
+        if (gameTime < 230) { // Award bonus points for completing the level quickly
             player.score += LESS_THAN_A_MINUITE_SCORE;
         }
 
@@ -294,7 +296,10 @@ void Game::checkLevelPass() {
         }
         if (getIsAuto()) {
             if (results.back() != std::pair{ player.score, 2 }) {
-                reportResultError("Results file doesn't match mario score!", resultsFilename, gameTime);
+                whyFailed = "Results file doesn't match mario score!";
+                if (!isSilentMode())
+                     reportResultError(whyFailed, resultsFilename, gameTime);
+                flagTest = false;
                 isGameOver = true;
                 return;
             }
@@ -302,6 +307,8 @@ void Game::checkLevelPass() {
 
         if (currentBoardIndex + 1 < static_cast<int>(boardFiles.size())) {
             nextLevel(); // Move to the next level if available
+            gameTime = 0;
+
         }
         else {
             winGame(); // End the game with a victory if all levels are completed
@@ -313,7 +320,8 @@ void Game::checkLevelPass() {
 // Determines if a barrel should be spawned based on random chance
 bool Game::shouldSpawnBarrel() {
     constexpr int spawnChance = 5; // 5% chance to spawn a barrel
-    return (rand() % 100) < spawnChance;
+    int randomal = rand();
+    return (randomal% 100) < spawnChance;
 }
 
 // Spawns a new barrel at Donkey Kong's position
@@ -340,21 +348,24 @@ void Game::nextLevel() {
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); // Reset colors
     }
 
+    if (!isAuto) {
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE)); // Clear input buffer
-    while (!_kbhit()) { // Wait for user input
-        Sleep(100);
+        while (!_kbhit()) { // Wait for user input
+            Sleep(100);
+        }
+        char key = _getch(); // Capture key press to proceed
     }
-    char key = _getch(); // Capture key press to proceed
-
     system("cls"); // Clear the screen after the message
 
     ++currentBoardIndex; // Increment the board index to move to the next level
+    readFiles(currentBoardIndex);
     board.loadBoardFromFile(boardFiles[currentBoardIndex]); // Load the next board
     restartLevel(); // Reset the level for the new board
-    board.print(noColors); // Display the new board
+    board.print(noColors,isSilentMode()); // Display the new board
     createLegend(); // Display the legend
-    player.printLife(LIFE_X, LIFE_Y); // Show Mario's remaining lives
-    player.printScore(SCORE_X, SCORE_Y); // Show Mario's score
+    player.printLife(LIFE_X, LIFE_Y,isSilentMode()); // Show Mario's remaining lives
+    player.printScore(SCORE_X, SCORE_Y, isSilentMode()); // Show Mario's score
+
 }
 
 // Ends the game with a win message and resets the game state
@@ -362,7 +373,8 @@ void Game::winGame() {
     //results.addResult(gameTime, score);
     isGameOver = true; // Mark the game as over
     currentBoardIndex = 0; // Reset to the first board
-    restartLevel(); // Reset the level state
+    if(!getIsAuto())
+         restartLevel(); // Reset the level state
     system("cls"); // Clear the screen
 
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -376,15 +388,20 @@ void Game::winGame() {
         SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE); // Reset text color
     }
 
+    if (!isAuto) {
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE)); // Clear input buffer
-    while (!_kbhit()) { // Wait for user input
-        Sleep(100);
+        while (!_kbhit()) { // Wait for user input
+            Sleep(100);
+        }
+        char key = _getch(); // Capture key press to continue
     }
-    char key = _getch(); // Capture key press to continue
+    
+
 }
 
 // Displays the win message with formatted output
 void Game::printWinMessage() const {
+    if (isSilentMode()) return;
     int screenWidth = 80; // Console screen width
     int screenHeight = 25; // Console screen height
 
@@ -430,6 +447,7 @@ void Game::printWinMessage() const {
 
 // Displays the next level message with formatted output
 void Game::printNextLevelMessage() const {
+    if (isSilentMode()) return;
     const int screenWidth = 80;
     const int screenHeight = 25;
 
@@ -472,6 +490,8 @@ void Game::printNextLevelMessage() const {
 
 // Displays the game over message with formatted output
 void Game::printLoseMessage() {
+    if (isSilentMode()) return;
+
     const int screenWidth = 80;
     const int screenHeight = 25;
 
@@ -513,7 +533,7 @@ void Game::resetBarrels() {
 // Resets all ghosts in the game
 void Game::resetGhosts() {
     for (auto& ghost : ghosts) {
-        ghost.erase(noColors); // Erase each ghost from the screen
+        ghost.erase(noColors, isSilentMode()); // Erase each ghost from the screen
     }
     ghosts.clear(); // Clear the ghost list
 }
@@ -535,11 +555,11 @@ void Game::restartLevel() {
         return;
     }
 
-    board.print(noColors);       // Print the reset board
+    board.print(noColors, isSilentMode());       // Print the reset board
     createGhost();               // Recreate ghosts on the board
     createHammer();              // Recreate hammer on the board
     createMario();               // Recreate Mario on the board
-    player.drawStart(noColors);  // Draw Mario at the starting position
+    player.drawStart(noColors, isSilentMode());  // Draw Mario at the starting position
     createLegend();              // Recreate the legend
 }
 
@@ -613,7 +633,7 @@ void Game::createMario() {
                 player = Mario(this, x, y, &board); // Set Mario's position
                 player.life = currentLife; // Restore life count
                 player.score = currentScore; // Restore score
-                player.drawStart(noColors); // Draw Mario on the board
+                player.drawStart(noColors, isSilentMode()); // Draw Mario on the board
                 return;
             }
         }
@@ -648,12 +668,13 @@ void Game::createPau() {
 
 // Displays the legend on the board at the specified coordinates
 void Game::printLegend(int x, int y) {
+    if (isSilentMode()) return;
     gotoxy(x, y);
     std::cout << "MARIO'S LIFE:"; // Display Mario's life
-    player.printLife(LIFE_X, LIFE_Y); // Print life details
+    player.printLife(LIFE_X, LIFE_Y,isSilentMode()); // Print life details
     gotoxy(x, y + 1);
     std::cout << "SCORE:"; // Display score
-    player.printScore(SCORE_X, SCORE_Y); // Print score details
+    player.printScore(SCORE_X, SCORE_Y, isSilentMode()); // Print score details
 }
 
 // Handles collecting the hammer when Mario reaches its position
@@ -664,7 +685,7 @@ void Game::collectHammer() {
         hammerOriginalY = hammer.getY(); // Save hammer's original Y position
         hammer.setPosition(-1, -1); // Remove hammer from the board
         board.setChar(player.getX(), player.getY(), ' '); // Clear hammer marker
-        hammer.printP(); // Indicate hammer collection
+        hammer.printP(isSilentMode()); // Indicate hammer collection
     }
 }
 
@@ -708,11 +729,11 @@ void Game::useHammer() {
 
     // Handle the hammer's status after use
     if (success) {
-        hammer.printP(); // Indicate the hammer is still available
+        hammer.printP(isSilentMode()); // Indicate the hammer is still available
     }
     else {
         player.hasHammer = false; // Remove the hammer from Mario
-        hammer.deletetP(); // Clear the hammer from the board
+        hammer.deletetP(isSilentMode()); // Clear the hammer from the board
     }
 }
 
@@ -737,7 +758,7 @@ void Game::checkAndRemoveEntities(int checkX, int checkY, bool& success) {
     // Check for ghosts
     for (auto it = ghosts.begin(); it != ghosts.end(); ) {
         if (it->getX() == checkX && it->getY() == checkY) { // Ghost found
-            it->erase(noColors); // Erase the ghost from the screen
+            it->erase(noColors, isSilentMode()); // Erase the ghost from the screen
             it = ghosts.erase(it); // Remove it from the list
             success = true; // Mark success
             player.score += KILL_GHOST_SCORE; // Add points for destroying a ghost
@@ -991,4 +1012,12 @@ void Game::reportResultError(const std::string& message, const std::string& file
     std::cout << "Iteration: " << iteration << '\n';
     std::cout << "Press any key to continue to next screens (if any)" << std::endl;
     _getch();
+}
+
+void Game::checkTests(bool flag) {
+    system("cls");
+    if (flag == true) 
+        std::cout << "test passed!" << std::endl;
+    else
+        std::cout << "test failed! - "<< whyFailed << std::endl;
 }
